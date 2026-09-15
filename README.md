@@ -90,9 +90,19 @@ models/          Three models, final model and metadata (binaries ignored)
 figures/         EDA, evaluation and SHAP PNGs
 reports/         Narrative reports, computed tables, provenance and rubric audit
 presentations/   Technical (12 slides) and executive (10 slides) content with notes
+demo/            Narrated capstone demonstration video and transcript
 scripts/         Download and notebook execution helpers
 tests/           Pipeline, feature, prediction and metric tests
 ```
+
+## Submission-ready artifacts
+
+- `reports/Final_Project_Report.pdf` and `.docx` — polished academic report with figures, references, AI disclosure, and rubric evidence map.
+- `presentations/Technical_Presentation.pptx` — 12-slide technical deck with speaker notes.
+- `presentations/Executive_Presentation.pptx` — 10-slide business/executive deck with speaker notes.
+- `demo/Arne_B_Ramos_Pillar_5_Capstone_Project_Demo.mp4` — narrated demonstration video covering the end-to-end project and Generative AI disclosure.
+- `reports/Generative_AI_Usage.md` — detailed AI-use disclosure with verified code examples.
+- `reports/Defense_QA_Cheat_Sheet.pdf` — oral-defense preparation and key numbers.
 
 ## Deployment instructions
 Run Streamlit locally using the command above. Edit an example or upload a CSV containing the full 42-feature schema; label and identifiers are not needed. The app displays Benign/Attack, an uncalibrated attack score, threshold and interpretation. Use only trusted locally generated joblib artifacts. Missing model/data files receive an actionable message. This model is an educational/research prototype and should not be used as a standalone production intrusion-detection system.
