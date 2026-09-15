@@ -89,20 +89,23 @@ notebooks/       Six executed research notebooks
 models/          Three models, final model and metadata (binaries ignored)
 figures/         EDA, evaluation and SHAP PNGs
 reports/         Narrative reports, computed tables, provenance and rubric audit
-presentations/   Technical (12 slides) and executive (10 slides) content with notes
-demo/            Narrated capstone demonstration video and transcript
+presentations/   Technical and executive slide content with speaker notes
+demo/            Demo-video transcript and delivery notes
 scripts/         Download and notebook execution helpers
 tests/           Pipeline, feature, prediction and metric tests
 ```
 
-## Submission-ready artifacts
+## Submission deliverables
 
-- `reports/Final_Project_Report.pdf` and `.docx` — polished academic report with figures, references, AI disclosure, and rubric evidence map.
-- `presentations/Technical_Presentation.pptx` — 12-slide technical deck with speaker notes.
-- `presentations/Executive_Presentation.pptx` — 10-slide business/executive deck with speaker notes.
-- `demo/Arne_B_Ramos_Pillar_5_Capstone_Project_Demo.mp4` — narrated demonstration video covering the end-to-end project and Generative AI disclosure.
-- `reports/Generative_AI_Usage.md` — detailed AI-use disclosure with verified code examples.
-- `reports/Defense_QA_Cheat_Sheet.pdf` — oral-defense preparation and key numbers.
+The LMS submission package contains the exported binary deliverables using the required naming convention:
+
+- `Arne_B_Ramos_Pillar_5_Capstone_Project.pdf` — collated final written response.
+- `Arne_B_Ramos_Pillar_5_Capstone_Project_Technical_Presentation.pptx` — 12-slide technical deck with speaker notes.
+- `Arne_B_Ramos_Pillar_5_Capstone_Project_Executive_Presentation.pptx` — 10-slide executive/business deck with speaker notes.
+- `Arne_B_Ramos_Pillar_5_Capstone_Project_Demo.mp4` — narrated 4:47 project demonstration.
+- `Arne_B_Ramos_Pillar_5_Capstone_Project_Coding_Files.zip` — reproducible repository/code submission.
+
+GitHub keeps the source/evidence versions: `reports/Final_Project_Report.md`, both presentation-content Markdown files, `demo/Demo_Video_Transcript.txt`, executable notebooks/source/tests, figures, and the expanded `reports/Generative_AI_Usage.md` with verified code examples. See [`demo/README.md`](demo/README.md) for the video-delivery note.
 
 ## Deployment instructions
 Run Streamlit locally using the command above. Edit an example or upload a CSV containing the full 42-feature schema; label and identifiers are not needed. The app displays Benign/Attack, an uncalibrated attack score, threshold and interpretation. Use only trusted locally generated joblib artifacts. Missing model/data files receive an actionable message. This model is an educational/research prototype and should not be used as a standalone production intrusion-detection system.
