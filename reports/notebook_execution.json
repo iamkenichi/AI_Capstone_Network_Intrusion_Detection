@@ -1,0 +1,38 @@
+[
+  {
+    "notebook": "01_problem_data_understanding.ipynb",
+    "status": "executed",
+    "code_cells": 5,
+    "runner": "IPython in-process"
+  },
+  {
+    "notebook": "02_eda.ipynb",
+    "status": "executed",
+    "code_cells": 8,
+    "runner": "IPython in-process"
+  },
+  {
+    "notebook": "03_preprocessing_feature_engineering.ipynb",
+    "status": "executed",
+    "code_cells": 3,
+    "runner": "IPython in-process"
+  },
+  {
+    "notebook": "04_model_training.ipynb",
+    "status": "executed",
+    "code_cells": 3,
+    "runner": "IPython in-process"
+  },
+  {
+    "notebook": "05_model_evaluation.ipynb",
+    "status": "executed",
+    "code_cells": 5,
+    "runner": "IPython in-process"
+  },
+  {
+    "notebook": "06_explainability_bias_audit.ipynb",
+    "status": "executed",
+    "code_cells": 4,
+    "runner": "IPython in-process"
+  }
+]
