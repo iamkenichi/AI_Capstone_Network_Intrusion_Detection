@@ -28,8 +28,12 @@ TTL and TCP sequence fields can encode operating-system or collection-environmen
 ## Engineered features
 Total bytes and packets describe traffic volume. Bytes per packet approximates flow size structure. Source byte share and packet share measure directionality without unstable division by destination-only counts. Bytes per second relates volume to duration. All formulas and zero handling are in `data_dictionary.csv` and `src/features.py`; transformations do not inspect labels.
 
-## Feature importance and ablation
-SHAP importance is used for feature analysis; no test-driven feature selection is performed. The original-feature ablation refits the validation-selected model family with the same hyperparameters and compares at 0.50 on validation data. It is a limited conditional comparison, not a retuned competition, and does not change the frozen winner.
+## Feature importance, feature selection and dimensionality reduction
+SHAP importance is used for feature analysis and operational interpretation. To explicitly address feature selection, the repository now includes a reproducible `SelectKBest(mutual_info_classif, k=20)` comparison in `scripts/feature_selection_pca_analysis.py`. This filter-based feature-selection experiment is fitted only on training data and is not allowed to revise the frozen test result.
+
+For dimensionality reduction, the same supplement evaluates PCA retaining 95% cumulative explained variance after the training-only preprocessing pipeline. PCA is paired with Logistic Regression as a compact linear-model comparison, not as the final SOC-facing model, because PCA components are less interpretable than the original network-flow features.
+
+The original-feature ablation refits the validation-selected model family with the same hyperparameters and compares at 0.50 on validation data. It is a limited conditional comparison, not a retuned competition, and does not change the frozen winner. See `reports/Feature_Selection_PCA_Analysis.md` for the added feature-selection and PCA methodology.
 
 | features   |   precision |   recall |     f1 |   roc_auc |   pr_auc |
 |:-----------|------------:|---------:|-------:|----------:|---------:|
