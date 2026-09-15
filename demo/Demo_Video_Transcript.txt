@@ -1,0 +1,25 @@
+ARNE B. RAMOS - PILLAR 5 CAPSTONE PROJECT DEMO
+
+Scene 1: This demo presents my Pillar 5 capstone project, Machine Learning-Based Network Intrusion Detection and Anomaly Classification. The project uses the UNSW N B fifteen dataset and evaluates a supervised binary classifier for analyst decision support.
+
+Scene 2: The security problem is alert prioritization. A useful model must catch attacks without overwhelming analysts with benign alerts. For that reason, the study reports recall, precision, F one, R O C A U C, average precision, false-positive rate, and false-negative rate rather than relying on accuracy alone.
+
+Scene 3: A major design requirement was preventing target leakage. The row identifier, binary label, and attack category are excluded from predictors. Attack category is only used later for error analysis. The project also handles duplicate predictor signatures and fits preprocessing on training data only.
+
+Scene 4: Exploratory analysis examines attack categories, protocol, service, state, flow volume, duration, packets, bytes, rates, and other network characteristics. Outliers are analyzed rather than blindly deleted because extreme behavior may itself contain useful attack signals.
+
+Scene 5: The implementation compares Logistic Regression, Random Forest, and XGBoost using the same preprocessing design. XGBoost was selected because it achieved the highest validation average precision. Model choice and threshold were frozen before final-test inspection, so the project does not switch models after seeing the test results.
+
+Scene 6: On the cleaned primary test population of fifty-two thousand seven hundred thirty-eight flows, XGBoost achieved ninety-seven point two percent attack recall, sixty-eight point zero seven percent precision, F one of zero point eight zero zero seven, R O C A U C of zero point nine six nine eight, and average precision of zero point nine five five zero. The F one target of point nine was not achieved and is reported honestly.
+
+Scene 7: The operating threshold is not automatically assumed to be zero point five. A validation-only threshold sweep makes the trade-off visible. The predeclared constraint of at least ninety-five percent recall and at most five percent false-positive rate was not feasible on this benchmark, so the limitation is explicitly documented.
+
+Scene 8: SHAP is used to explain the selected XGBoost model globally and locally. The project includes examples for true positives, true negatives, false positives, and false negatives. SHAP values are treated as model associations rather than causal rules, especially for features that may reflect the benchmark collection environment.
+
+Scene 9: The ethical and bias analysis uses operational subgroups that actually exist in the network data: protocol, service, state, and attack category. The project does not invent demographic attributes. The audit identifies weaker attack groups and services that generate large numbers of false positives, which are important for any future S O C pilot.
+
+Scene 10: The repository includes a Streamlit research prototype that accepts extracted network-flow features, applies the saved model pipeline and frozen threshold, and returns an analyst-review classification. It does not perform live packet capture or automated blocking. The repository also contains six notebooks, reusable source modules, tests, reports, figures, and reproducibility files.
+
+Scene 11: Generative AI use is explicitly disclosed. Codex assisted scaffolding, coding, refactoring, debugging, tests, documentation, and visualization suggestions. However, the measured statistics and model outputs come from executed Python code. The repository includes code examples, tests, and a dedicated Generative A I usage document.
+
+Scene 12: The conclusion is deliberately cautious. The prototype shows strong ranking and attack recall, but its false-positive burden is too high for autonomous production use. The recommended next step is a controlled offline or shadow-mode evaluation on recent local telemetry with analyst oversight, score calibration, drift monitoring, and a clearly defined alert budget. Thank you.
