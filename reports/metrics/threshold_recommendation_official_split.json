@@ -1,0 +1,67 @@
+{
+  "cost_ratio_assumed": 20.0,
+  "max_fpr_budget": 0.01,
+  "max_f1": {
+    "threshold": 0.525,
+    "recall": 0.976287,
+    "precision": 0.969504,
+    "f1": 0.972884,
+    "false_positive_rate": 0.065446,
+    "false_negative_rate": 0.023713
+  },
+  "min_cost": {
+    "threshold": 0.04,
+    "recall": 1.0,
+    "precision": 0.915222,
+    "f1": 0.955735,
+    "false_positive_rate": 0.197411,
+    "false_negative_rate": 0.0
+  },
+  "fpr_constrained": {
+    "threshold": 0.91,
+    "recall": 0.892413,
+    "precision": 0.995095,
+    "f1": 0.940961,
+    "false_positive_rate": 0.009375,
+    "false_negative_rate": 0.107587
+  },
+  "cost_ratio_sensitivity": {
+    "ratio_5": {
+      "threshold": 0.215,
+      "recall": 0.997067,
+      "false_positive_rate": 0.152054
+    },
+    "ratio_10": {
+      "threshold": 0.09,
+      "recall": 0.999665,
+      "false_positive_rate": 0.187411
+    },
+    "ratio_20": {
+      "threshold": 0.04,
+      "recall": 1.0,
+      "false_positive_rate": 0.197411
+    },
+    "ratio_50": {
+      "threshold": 0.04,
+      "recall": 1.0,
+      "false_positive_rate": 0.197411
+    },
+    "ratio_100": {
+      "threshold": 0.04,
+      "recall": 1.0,
+      "false_positive_rate": 0.197411
+    }
+  },
+  "adopted": {
+    "threshold": 0.525,
+    "basis": "F1-optimal on the validation split",
+    "alternative_for_constrained_soc": {
+      "threshold": 0.91,
+      "recall": 0.892413,
+      "precision": 0.995095,
+      "f1": 0.940961,
+      "false_positive_rate": 0.009375,
+      "false_negative_rate": 0.107587
+    }
+  }
+}

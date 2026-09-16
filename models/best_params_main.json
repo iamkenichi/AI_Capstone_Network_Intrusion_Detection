@@ -1,0 +1,156 @@
+{
+  "logistic_regression": {
+    "model_key": "logistic_regression",
+    "display_name": "Logistic Regression",
+    "best_params": {
+      "C": 73.92266140516048,
+      "class_weight": null
+    },
+    "cv_f1_mean": 0.8585908294438365,
+    "cv_f1_std": 0.0008497520164043959,
+    "cv_average_precision_mean": 0.9411737556260948,
+    "cv_roc_auc_mean": 0.9551605096307382,
+    "cv_train_f1_mean": 0.8588963942339038,
+    "search_seconds": 119.42,
+    "n_candidates": 16,
+    "notes": "Interpretable linear baseline. Coefficients are directly readable as log-odds contributions, which makes it the reference point for judging whether the ensembles' extra complexity is earning its keep.",
+    "tags": [
+      "linear",
+      "interpretable",
+      "baseline"
+    ],
+    "cv_train_minus_test_f1": 0.00031,
+    "fit_seconds": 9.978,
+    "inference_seconds_total": 0.1585,
+    "inference_rows": 30737,
+    "inference_ms_per_1k_rows": 5.157,
+    "throughput_flows_per_second": 193909.2,
+    "n_features_after_encoding": 73
+  },
+  "random_forest": {
+    "model_key": "random_forest",
+    "display_name": "Random Forest",
+    "best_params": {
+      "class_weight": "balanced",
+      "max_depth": 18,
+      "max_features": 0.3,
+      "min_samples_leaf": 1,
+      "min_samples_split": 4,
+      "n_estimators": 300
+    },
+    "cv_f1_mean": 0.9099745628496615,
+    "cv_f1_std": 0.0005317125263826719,
+    "cv_average_precision_mean": 0.9775535677979429,
+    "cv_roc_auc_mean": 0.9812205832182453,
+    "cv_train_f1_mean": 0.9611322418402508,
+    "search_seconds": 1762.93,
+    "n_candidates": 25,
+    "notes": "Bagged axis-aligned trees. Robust to the dataset's heavy tails and mixed feature scales, and provides variance reduction without the sequential-fitting cost of boosting.",
+    "tags": [
+      "ensemble",
+      "bagging",
+      "tree"
+    ],
+    "cv_train_minus_test_f1": 0.05116,
+    "fit_seconds": 16.564,
+    "inference_seconds_total": 0.2338,
+    "inference_rows": 30737,
+    "inference_ms_per_1k_rows": 7.608,
+    "throughput_flows_per_second": 131445.1,
+    "n_features_after_encoding": 73
+  },
+  "xgboost": {
+    "model_key": "xgboost",
+    "display_name": "XGBoost",
+    "best_params": {
+      "colsample_bytree": 0.92650472773368,
+      "gamma": 0.14722444603479284,
+      "learning_rate": 0.039320324807500945,
+      "max_depth": 9,
+      "min_child_weight": 1,
+      "n_estimators": 455,
+      "reg_alpha": 0.019068457927706083,
+      "reg_lambda": 0.1699223584506862,
+      "scale_pos_weight": 1.2532010556152868,
+      "subsample": 0.9744619096643123
+    },
+    "cv_f1_mean": 0.9130744643290887,
+    "cv_f1_std": 0.0016686766337492072,
+    "cv_average_precision_mean": 0.979073735248968,
+    "cv_roc_auc_mean": 0.9823647141879288,
+    "cv_train_f1_mean": 0.9596426685553411,
+    "search_seconds": 729.3,
+    "n_candidates": 30,
+    "notes": "Gradient-boosted trees. Expected to lead on tabular flow data; the primary candidate for deployment and the model carried into the SHAP analysis.",
+    "tags": [
+      "ensemble",
+      "boosting",
+      "tree"
+    ],
+    "cv_train_minus_test_f1": 0.04657,
+    "fit_seconds": 4.765,
+    "inference_seconds_total": 0.1573,
+    "inference_rows": 30737,
+    "inference_ms_per_1k_rows": 5.119,
+    "throughput_flows_per_second": 195353.0,
+    "n_features_after_encoding": 73
+  },
+  "lightgbm": {
+    "model_key": "lightgbm",
+    "display_name": "LightGBM",
+    "best_params": {
+      "colsample_bytree": 0.9416401294594341,
+      "learning_rate": 0.03168186815285065,
+      "min_child_samples": 66,
+      "n_estimators": 424,
+      "num_leaves": 148,
+      "reg_lambda": 0.05654846344501571,
+      "scale_pos_weight": 1.2532010556152868,
+      "subsample": 0.6002081507981263,
+      "subsample_freq": 0
+    },
+    "cv_f1_mean": 0.9117403740037847,
+    "cv_f1_std": 0.0006792048921460417,
+    "cv_average_precision_mean": 0.9788494988176449,
+    "cv_roc_auc_mean": 0.9821358892694722,
+    "cv_train_f1_mean": 0.9681745991598781,
+    "search_seconds": 697.95,
+    "n_candidates": 25,
+    "notes": "Optional fourth model: leaf-wise boosting. Included to check that the XGBoost result is a property of gradient boosting rather than of one library's defaults.",
+    "tags": [
+      "ensemble",
+      "boosting",
+      "tree",
+      "optional"
+    ],
+    "cv_train_minus_test_f1": 0.05643,
+    "fit_seconds": 5.086,
+    "inference_seconds_total": 0.285,
+    "inference_rows": 30737,
+    "inference_ms_per_1k_rows": 9.273,
+    "throughput_flows_per_second": 107834.9,
+    "n_features_after_encoding": 73
+  },
+  "isolation_forest": {
+    "model_key": "isolation_forest",
+    "display_name": "Isolation Forest (unsupervised)",
+    "best_params": {
+      "n_estimators": 300,
+      "contamination": "auto",
+      "fitted_on": "benign training flows only"
+    },
+    "fit_seconds": 0.987,
+    "benign_training_rows": 51286,
+    "benign_fraction_of_train": 0.5562,
+    "notes": "Unsupervised baseline trained without any attack labels. Included to quantify what supervised labelling actually buys, and because a novelty detector is the natural complement to a supervised model for zero-day traffic the classifier has never seen.",
+    "tags": [
+      "unsupervised",
+      "anomaly",
+      "optional"
+    ],
+    "inference_seconds_total": 0.4707,
+    "inference_rows": 30737,
+    "inference_ms_per_1k_rows": 15.313,
+    "throughput_flows_per_second": 65303.1
+  }
+}

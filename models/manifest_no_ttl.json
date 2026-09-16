@@ -1,0 +1,28 @@
+{
+  "experiment": "no_ttl",
+  "description": "sttl, dttl and ct_state_ttl removed, quantifying reliance on the TTL artefact.",
+  "settings": {
+    "include_engineered": true,
+    "exclude": [
+      "sttl",
+      "dttl",
+      "ct_state_ttl"
+    ],
+    "use_smote": false
+  },
+  "random_state": 42,
+  "cv_folds": 5,
+  "tuning_scorer": "f1",
+  "n_train_rows": 92210,
+  "n_val_rows": 30737,
+  "train_attack_rate": 0.44381,
+  "val_attack_rate": 0.4438,
+  "scale_pos_weight_used": 1.2532,
+  "models": [
+    "isolation_forest",
+    "lightgbm",
+    "logistic_regression",
+    "random_forest",
+    "xgboost"
+  ]
+}

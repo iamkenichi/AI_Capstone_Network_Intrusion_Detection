@@ -1,8 +1,66 @@
-name: intrusion-capstone
+# =============================================================================
+# Conda environment for:
+#   Machine Learning-Based Network Intrusion Detection and Anomaly Classification
+#
+#   conda env create -f environment.yml
+#   conda activate nids-capstone
+#   python -m src.pipeline --all
+#
+# The pip-installable alternative is `pip install -r requirements.txt` into a
+# plain venv; both routes resolve to the same library versions. The exact
+# versions used to produce the committed results are recorded in
+# reports/environment_versions.txt.
+# =============================================================================
+name: nids-capstone
+
 channels:
   - conda-forge
+
 dependencies:
+  # --- Interpreter ---------------------------------------------------------
+  # Developed and executed on CPython 3.13.9. Pinned to the 3.13 series because
+  # that is what the committed results were produced with; 3.11 and 3.12 also
+  # satisfy every dependency.
   - python=3.13
-  - pip
+
+  # --- Core scientific stack -----------------------------------------------
+  - numpy>=1.26,<3.0
+  - pandas>=2.1,<3.0
+  - scipy>=1.11,<2.0
+  - pyarrow>=14.0          # parquet round-trip for data/processed/
+
+  # --- Machine learning ----------------------------------------------------
+  - scikit-learn>=1.4,<2.0
+  - py-xgboost>=2.0,<4.0   # conda-forge names the XGBoost Python package py-xgboost
+  - lightgbm>=4.1,<5.0
+  - imbalanced-learn>=0.12,<1.0
+
+  # --- Visualisation -------------------------------------------------------
+  - matplotlib-base>=3.8,<4.0
+
+  # --- Persistence ---------------------------------------------------------
+  - joblib>=1.3,<2.0
+
+  # --- Notebooks -----------------------------------------------------------
+  - jupyterlab>=4.0,<5.0
+  - ipykernel>=6.29,<7.0
+  - nbformat>=5.9,<6.0
+  - nbconvert>=7.10,<8.0
+
+  # --- Testing -------------------------------------------------------------
+  - pytest>=8.0,<9.0
+
+  # --- HTTP ----------------------------------------------------------------
+  - requests>=2.31,<3.0
+
+  # --- Packages installed via pip ------------------------------------------
+  # shap and streamlit track upstream releases faster on PyPI than on
+  # conda-forge, and all four are pure-Python wheels, so installing them with
+  # pip inside the conda environment avoids a slow or stale solve.
+  - pip>=24.0
   - pip:
-      - -r requirements.txt
+      - shap>=0.44,<1.0
+      - streamlit>=1.30,<2.0
+      # Submission bundle only (`python -m src.deliverables`).
+      - python-docx>=1.1,<2.0
+      - python-pptx>=0.6.23,<2.0

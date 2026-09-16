@@ -1,161 +1,166 @@
-# Executive presentation content
+# Executive Presentation
 
-10 slides. Metrics come from the executed run; source files are named below.
+**Automated Detection of Malicious Network Activity**
 
-## Slide 1 — Network detection research
+*Audience: executives and security leadership · 10 slides · ~12 minutes*
+*Generated 2026-09-16. No equations, no code.*
 
-### Main content
+---
 
-- A decision-support prototype for security analysts
+## Slide 1 — Executive Title
 
-### Recommended visual
+**Content**
+- Automated Detection of Malicious Network Activity
+- A machine-learning layer that reviews every network connection and ranks the suspicious ones for analysts
+- Proof-of-concept result: **91% of attacks detected**, with **7.14% of normal traffic flagged for review**
+- Recommendation: deploy as an **analyst assistant**, not an automated gatekeeper
 
-Minimal title and project name
+**Recommended visual:** Clean title slide; one large statistic — "91% of attacks detected" — as the focal point.
 
-### Speaker notes
+**Speaker notes:** Lead with the outcome and the recommendation. Signal early that this is a decision-support tool, so nobody leaves thinking we are proposing to let software block traffic on its own.
 
-This capstone evaluates recorded network flows; it is not a production protection claim.
+---
 
-## Slide 2 — The security problem
+## Slide 2 — The Cybersecurity Problem
 
-### Main content
+**Content**
+- Our network records **millions of connections every day**
+- A small number of them are an attacker probing, spreading, or taking data out
+- No team can review them all — reviewing one second each would take a century of staff time per day
+- Today we rely on rules that recognise **known** attacks. They work, and they are blind to anything new
 
-- Analysts must find suspicious activity in large telemetry volumes.
-- Missed attacks create risk.
-- False alerts consume investigation capacity.
+**Recommended visual:** A haystack graphic — millions of grey connections, a handful of red ones. No numbers on the slide itself.
 
-### Recommended visual
+**Speaker notes:** Avoid jargon entirely. The question this slide should raise in the audience's mind is "so how do we find the red ones?"
 
-False alerts and missed attacks comparison
+---
 
-### Speaker notes
+## Slide 3 — Why Existing Monitoring Is Difficult
 
-Avoid assigning unsupported dollar losses or current threat prevalence.
+**Content**
+- **Rules only catch what we have already seen.** A new tool or technique passes straight through
+- **Volume beats people.** Analyst capacity is fixed; traffic is not
+- **Too many alerts is as bad as too few.** A team that cannot work its queue stops trusting it — and real attacks get closed unread
+- The cost of the two mistakes is very different, and both are real
 
-## Slide 3 — Monitoring workload
+**Recommended visual:** Simple two-column comparison: "Missed attack" (breach, dwell time, regulatory exposure) vs "False alarm" (wasted analyst hours, eroded trust).
 
-### Main content
+**Speaker notes:** The alert-fatigue point usually lands hardest with this audience. Emphasise that a detector producing more alerts than we can process does not degrade gracefully — it fails completely, because people stop reading it.
 
-- Network services and traffic patterns differ.
-- Rules and model alerts need asset and incident context.
-- A single score cannot replace investigation.
+---
 
-### Recommended visual
+## Slide 4 — The Proposed Solution
 
-Example flow-to-incident review process
+**Content**
+- Software that learns what attacks **look like** from thousands of past examples
+- It examines the *shape* of each connection — how long, how much data, which direction, whether the other side answered — and never reads message contents
+- Every connection gets a **risk score** and a **plain-English reason**
+- Analysts start at the top of a ranked list instead of searching a haystack
 
-### Speaker notes
+**Recommended visual:** Simple pipeline: Network traffic → Risk scoring → Ranked queue → Analyst → Action. One row, five boxes.
 
-Explain that several flow alerts can belong to one incident and require aggregation.
+**Speaker notes:** The privacy point is worth stating unprompted: the system reads connection statistics, not message contents. It usually pre-empts the first question from legal or from the works council.
 
-## Slide 4 — Proposed ML solution
+---
 
-### Main content
+## Slide 5 — Detection Performance
 
-- Use historical labeled flows to learn detection patterns.
-- Compare three model approaches.
-- Present suspicious flows for human review.
+**Content**
+- Tested on **30,737 connections the system had never seen**
+- **Caught 12,430 of 13,642 attacks** (91.1%)
+- **Missed 1,212** (8.9%)
+- Flagged **1,221 of 17,095 normal connections** for review (7.14%)
+- Fast enough to keep up with our traffic on ordinary hardware — no special equipment needed
 
-### Recommended visual
+**Recommended visual:** Four large stat tiles: attacks caught, attacks missed, normal traffic flagged, speed. `figures/fig16_model_comparison.png` (middle panel only) as support.
 
-README architecture diagram
+**Speaker notes:** Give the honest caveat here rather than burying it: the test data has far more attacks than a real network does, so the "how many of our alerts are real" figure will be worse in production. What does carry over is the detection rate and the share of normal traffic flagged.
 
-### Speaker notes
+---
 
-UNSW-NB15 is a historical research benchmark. Source: https://research.unsw.edu.au/projects/unsw-nb15-dataset
+## Slide 6 — Business and Security Value
 
-## Slide 5 — Measured detection performance
+**Content**
+- **Faster detection.** Time-to-detection is the variable most strongly linked to breach cost — every hour saved limits the damage
+- **Coverage for unknown attacks.** Catches suspicious *behaviour*, not just known signatures
+- **Better use of analyst time.** A ranked, explained queue replaces undirected searching
+- **Quantified risk.** We can finally answer "what fraction of attacks of this kind do we catch?" with a measured number
+- **Consistency.** The same judgement applied to the ten-thousandth connection of a night shift as to the first
 
-### Main content
+**Recommended visual:** Four value tiles with icons. Deliberately no ROI figure.
 
-- Attack recall: 97.20%.
-- Alert precision: 68.07%.
-- Missed attack flows: 532.
+**Speaker notes:** If asked for a financial ROI: we can build one from our own analyst cost and incident history, but the honest position today is that we have not measured it on our own network, and we are not going to present an invented number.
 
-### Recommended visual
+---
 
-figures/confusion_xgboost.png
+## Slide 7 — The Trade-off We Control
 
-### Speaker notes
+**Content**
+- There is a dial. Turning it up catches more attacks and generates more false alarms; turning it down does the reverse
+- **This is a business decision about analyst capacity, not a technical one**
+- At the recommended setting: 91% of attacks caught, 7.14% of normal traffic flagged
+- A tighter setting is available: it alerts on only 0.82% of normal traffic, at the cost of catching 77% of attacks instead of 91%
+- At our illustrative volume of 10 million connections a day, that recommended setting implies roughly **714,240 items to review per day** — which is exactly the number we must size the team against
 
-Results describe the cleaned benchmark test population. They do not forecast detection in the organization. Source: reports/model_comparison.csv.
+**Recommended visual:** `figures/fig17_threshold_analysis.png`, left panel only, relabelled in plain language ("attacks caught" / "false alarms").
 
-## Slide 6 — Potential security value
+**Speaker notes:** This is the slide that needs a decision from the room. Present the two settings and ask which the SOC can actually staff. Be clear the daily volume is an illustration, not a measurement of our network.
 
-### Main content
+---
 
-- Prioritize flow review and make decisions inspectable.
-- Measure analyst effort and incident coverage in a pilot.
-- Financial ROI has not been measured.
+## Slide 8 — Explainability and Governance
 
-### Recommended visual
+**Content**
+- Every alert comes with **the specific reasons it was raised** — not just a score
+- Example: *"1.2 MB sent, nothing returned, the connection never properly opened, and this source contacted 43 different services in the last few minutes"*
+- Supports audit, regulatory review and analyst training
+- We can show **which attack types we detect well and which we do not** — and we do
+- Known limitations are documented rather than hidden
 
-Pilot measurement table: alerts, review time, incidents, misses
+**Recommended visual:** A mocked-up alert card showing score, risk band, and three plain-English reasons.
 
-### Speaker notes
+**Speaker notes:** Explainability is a governance requirement, not a nice-to-have. Add that the same analysis told us about a weakness in our own test data — which is how we know the process is working rather than just producing flattering numbers.
 
-A defensible ROI requires local traffic, review time, staffing cost and incident outcomes. No savings estimate is invented.
+---
 
-## Slide 7 — False-alert trade-off
+## Slide 9 — Deployment Recommendation
 
-### Main content
+**Content**
+- **Deploy as an analyst assistant.** It ranks and explains; people decide. It does **not** block traffic
+- **Phase 1 — Shadow mode (4–6 weeks).** Run alongside existing tools, measure the real false-alarm rate on our own traffic. No analyst action
+- **Phase 2 — Assisted triage.** Analysts work the ranked queue; every decision is captured
+- **Phase 3 — Continuous improvement.** Retrain on our own data and analyst feedback; monitor for drift
+- **Requirement:** recalibrate on our network before go-live. Performance measured on public research data will not transfer unchanged
 
-- At threshold 0.49: FPR 25.64%; FNR 2.80%.
-- About 2,564 alerts per 10,000 benign flows if the test FPR transfers.
-- Threshold changes affect both workload and coverage.
+**Recommended visual:** Three-phase timeline with a decision gate between each phase.
 
-### Recommended visual
+**Speaker notes:** The shadow-mode phase is non-negotiable and is also the easiest thing to approve — it carries no operational risk and produces the number we actually need.
 
-figures/threshold_tradeoff.png
+---
 
-### Speaker notes
+## Slide 10 — Key Takeaways
 
-The 10,000-flow illustration is conditional arithmetic, not a volume forecast. Threshold curves use validation data; observed test rates may differ.
+**Content**
+1. **It works.** 91% of attacks detected on data the system had never seen, at ordinary hardware speed
+2. **It is honest about what it misses.** Weaker on stealthy, low-volume attack types — documented, not hidden
+3. **It is explainable.** Every alert carries its reasons, satisfying audit and regulatory needs
+4. **It is a layer, not a replacement.** It works alongside existing controls and human judgement
+5. **Next step:** approve a 4–6 week shadow-mode pilot on our own traffic — no operational risk, and it gives us the real numbers
 
-## Slide 8 — Explainability and governance
+**Recommended visual:** Five numbered takeaways, generous white space, the ask highlighted.
 
-### Main content
+**Speaker notes:** Close on the specific ask: approval for the shadow-mode pilot. That is the only decision needed today, and it is a low-risk one.
 
-- Inspect reasons for predictions and systematic errors.
-- Audit services and attack categories.
-- Keep analysts accountable for response decisions.
+---
 
-### Recommended visual
+## Anticipated questions
 
-figures/shap_importance.png
-
-### Speaker notes
-
-Operational auditing is not demographic fairness. Protect uploaded metadata and keep the prototype local.
-
-## Slide 9 — Deployment recommendation
-
-### Main content
-
-- Start with offline or shadow-mode evaluation.
-- Use recent local telemetry and a defined alert budget.
-- Require calibration, monitoring and rollback before expansion.
-
-### Recommended visual
-
-Pilot gates: validate → measure → review → decide
-
-### Speaker notes
-
-This model is an educational/research prototype and should not be used as a standalone production intrusion-detection system.
-
-## Slide 10 — Key takeaways
-
-### Main content
-
-- XGBoost was selected using validation evidence.
-- Benchmark performance has visible errors and coverage gaps.
-- The next decision is whether a controlled local pilot is justified.
-
-### Recommended visual
-
-Three concise takeaways with limitations footnote
-
-### Speaker notes
-
-Do not interpret strong aggregate results as complete protection. Review rare-attack failures and local false-alert capacity before setting an operating threshold.
+| Question | Answer |
+|---|---|
+| *Can it replace our current tools?* | No. It catches different things and should run alongside them. |
+| *Will it block attacks automatically?* | Not as recommended. It misses some attacks with high confidence, which makes autonomous blocking inappropriate today. |
+| *How many false alarms will we actually get?* | Unknown until shadow mode. The research-data figure is optimistic because that data has far more attacks than our network does. |
+| *Does it read our data?* | No. It uses connection statistics — size, timing, direction — never message contents. |
+| *What is the ROI?* | We can model it from our analyst cost and incident history after shadow mode. We are not presenting an invented figure today. |
+| *Can attackers evade it?* | Yes, with effort — they can reshape traffic to look ordinary. That is one reason it is a layer rather than a sole control. |
+| *How often must it be retrained?* | Traffic changes continuously. Plan for scheduled retraining with drift monitoring; the pilot will tell us the right cadence. |

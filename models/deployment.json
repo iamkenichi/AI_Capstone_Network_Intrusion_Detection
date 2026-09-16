@@ -1,0 +1,10 @@
+{
+  "model_key": "xgboost",
+  "display_name": "XGBoost",
+  "threshold": 0.505,
+  "selection_reason": "Highest validation PR-AUC (0.9784), +0.0002 ahead of LightGBM (0.9783). Validation recall 0.9194, FPR 0.0742, throughput 195,353 flows/s.",
+  "selected_on": "validation split",
+  "validation_pr_auc": 0.978442,
+  "random_state": 42,
+  "frozen_at": "2026-09-16 18:55:40"
+}

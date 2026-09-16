@@ -1,6 +1,7 @@
 MIT License
 
-Copyright (c) 2026 AI Capstone contributors
+Copyright (c) 2026 AI/ML Capstone — Machine Learning-Based Network Intrusion
+Detection and Anomaly Classification
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,6 +21,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Scope: This license applies to original project code and documentation only.
-UNSW-NB15 data and its source dictionary remain under their authors' terms.
-No commercial data-use right or dataset relicensing is granted here.
+--------------------------------------------------------------------------------
+THIRD-PARTY DATA NOTICE
+--------------------------------------------------------------------------------
+
+This licence covers the SOURCE CODE AND DOCUMENTATION IN THIS REPOSITORY ONLY.
+It does not cover, and cannot grant rights to, the UNSW-NB15 dataset.
+
+The UNSW-NB15 dataset was created by Dr Nour Moustafa and Dr Jill Slay at the
+Australian Centre for Cyber Security (ACCS), UNSW Canberra. It is distributed by
+its authors for research and academic purposes with attribution. No dataset
+files are committed to this repository; `src/data_loader.py` retrieves them at
+runtime from public sources.
+
+Anyone using this project must comply with the dataset's own terms and cite:
+
+  Moustafa, N. and Slay, J. (2015). UNSW-NB15: a comprehensive data set for
+  network intrusion detection systems (UNSW-NB15 network data set). Military
+  Communications and Information Systems Conference (MilCIS), IEEE.
+
+  Moustafa, N. and Slay, J. (2016). The evaluation of Network Anomaly Detection
+  Systems: Statistical analysis of the UNSW-NB15 data set and the comparison
+  with the KDD99 data set. Information Security Journal: A Global Perspective,
+  25(1-3), 18-31.
+
+--------------------------------------------------------------------------------
+INTENDED USE
+--------------------------------------------------------------------------------
+
+This project is an educational and research artefact. The trained models are
+not fit for use as a standalone production intrusion-detection system. See the
+"Limitations" section of README.md and reports/Final_Project_Report.md before
+relying on any output.

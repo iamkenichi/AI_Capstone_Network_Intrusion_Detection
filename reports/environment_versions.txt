@@ -1,0 +1,21 @@
+Environment used to produce the committed results
+====================================================
+Generated:        2026-09-16
+Python:           3.13.9 (CPython)
+Platform:         Windows 11 (AMD64)
+Global seed:      42
+
+Library versions
+----------------------------------------------------
+numpy              2.5.3
+pandas             2.3.3
+scipy              1.18.1
+sklearn            1.9.1
+xgboost            3.4.1
+lightgbm           4.7.0
+shap               0.52.0
+matplotlib         3.11.2
+joblib             1.6.0
+streamlit          1.63.0
+imblearn           0.14.2
+pytest             8.4.2
