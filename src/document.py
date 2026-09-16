@@ -532,8 +532,9 @@ def generate_example_flows(n_per_class: int = 60) -> None:
     them check the predictions against ground truth. Both columns are ignored by
     :func:`src.predict.predict`, which selects its inputs by name.
     """
-    corpus, _ = preprocessing.prepare_corpus()
-    _, _, test = preprocessing.split_corpus(corpus)
+    # The PRIMARY protocol's test split, so these are flows the deployed model
+    # genuinely never saw - not a different partition of the same data.
+    _, _, test, _ = preprocessing.split_published()
 
     frames = []
     for value in (0, 1):

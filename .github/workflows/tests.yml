@@ -48,3 +48,9 @@ jobs:
         # need them skip themselves. What runs here is the leakage-control,
         # feature-engineering and input-validation suite.
         run: python -m pytest
+
+      - name: Verify committed artefacts
+        # Checks the artefacts in the repository against what the reports claim:
+        # figure integrity, notebook execution, deck slide counts, README links,
+        # model feature schema. The data- and model-dependent checks skip here.
+        run: python scripts/verify_project.py

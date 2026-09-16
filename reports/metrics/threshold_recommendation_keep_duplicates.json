@@ -2,66 +2,66 @@
   "cost_ratio_assumed": 20.0,
   "max_fpr_budget": 0.01,
   "max_f1": {
-    "threshold": 0.5,
-    "recall": 0.956429,
-    "precision": 0.966999,
-    "f1": 0.961685,
-    "false_positive_rate": 0.057796,
-    "false_negative_rate": 0.043571
+    "threshold": 0.56,
+    "recall": 0.95312,
+    "precision": 0.97261,
+    "f1": 0.962766,
+    "false_positive_rate": 0.047527,
+    "false_negative_rate": 0.04688
   },
   "min_cost": {
-    "threshold": 0.015,
-    "recall": 0.99997,
-    "precision": 0.858886,
-    "f1": 0.924074,
-    "false_positive_rate": 0.290914,
-    "false_negative_rate": 3e-05
+    "threshold": 0.02,
+    "recall": 0.99915,
+    "precision": 0.867297,
+    "f1": 0.928566,
+    "false_positive_rate": 0.270699,
+    "false_negative_rate": 0.00085
   },
   "fpr_constrained": {
-    "threshold": 0.83,
-    "recall": 0.903659,
-    "precision": 0.993789,
-    "f1": 0.946583,
-    "false_positive_rate": 0.01,
-    "false_negative_rate": 0.096341
+    "threshold": 0.905,
+    "recall": 0.90627,
+    "precision": 0.993906,
+    "f1": 0.948067,
+    "false_positive_rate": 0.009839,
+    "false_negative_rate": 0.09373
   },
   "cost_ratio_sensitivity": {
     "ratio_5": {
-      "threshold": 0.175,
-      "recall": 0.993836,
-      "false_positive_rate": 0.205806
+      "threshold": 0.065,
+      "recall": 0.996205,
+      "false_positive_rate": 0.22328
     },
     "ratio_10": {
-      "threshold": 0.075,
-      "recall": 0.999332,
-      "false_positive_rate": 0.272849
+      "threshold": 0.05,
+      "recall": 0.99748,
+      "false_positive_rate": 0.237903
     },
     "ratio_20": {
-      "threshold": 0.015,
-      "recall": 0.99997,
-      "false_positive_rate": 0.290914
+      "threshold": 0.02,
+      "recall": 0.99915,
+      "false_positive_rate": 0.270699
     },
     "ratio_50": {
-      "threshold": 0.015,
-      "recall": 0.99997,
-      "false_positive_rate": 0.290914
+      "threshold": 0.01,
+      "recall": 0.999514,
+      "false_positive_rate": 0.283656
     },
     "ratio_100": {
-      "threshold": 0.015,
-      "recall": 0.99997,
-      "false_positive_rate": 0.290914
+      "threshold": 0.01,
+      "recall": 0.999514,
+      "false_positive_rate": 0.283656
     }
   },
   "adopted": {
-    "threshold": 0.5,
+    "threshold": 0.56,
     "basis": "F1-optimal on the validation split",
     "alternative_for_constrained_soc": {
-      "threshold": 0.83,
-      "recall": 0.903659,
-      "precision": 0.993789,
-      "f1": 0.946583,
-      "false_positive_rate": 0.01,
-      "false_negative_rate": 0.096341
+      "threshold": 0.905,
+      "recall": 0.90627,
+      "precision": 0.993906,
+      "f1": 0.948067,
+      "false_positive_rate": 0.009839,
+      "false_negative_rate": 0.09373
     }
   }
 }

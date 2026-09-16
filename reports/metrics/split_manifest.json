@@ -1,0 +1,17 @@
+{
+  "protocol": "published_partition",
+  "published_train_rows": 175341,
+  "published_test_rows": 82332,
+  "development_conflicting_signatures": 229,
+  "development_duplicates_removed": 74301,
+  "test_conflicting_signatures": 6,
+  "test_duplicates_removed": 28386,
+  "test_overlap_removed": 1302,
+  "train_rows": 80832,
+  "validation_rows": 20208,
+  "test_rows": 52644,
+  "train_attack_rate": 0.4872,
+  "validation_attack_rate": 0.4872,
+  "test_attack_rate": 0.3606,
+  "random_state": 42
+}

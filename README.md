@@ -3,6 +3,7 @@
 > Flow-level intrusion detection on UNSW-NB15 — built to be reproducible,
 > explainable, and honest about what it actually measures.
 
+[![tests](https://github.com/iamkenichi/AI_Capstone_Network_Intrusion_Detection/actions/workflows/tests.yml/badge.svg)](https://github.com/iamkenichi/AI_Capstone_Network_Intrusion_Detection/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.4%2B-orange)
 ![XGBoost](https://img.shields.io/badge/XGBoost-2.0%2B-green)
@@ -42,21 +43,21 @@ supervised detector that scores every flow for maliciousness using **flow
 statistics only** — no packet payloads, no IP addresses, no port numbers, no
 timestamps — and ranks them for analyst triage.
 
-**XGBoost** detects **91.1%** of attacks on 30,737 held-out flows while alerting on **7.14%** of benign traffic (F1 0.9109, PR-AUC 0.9791).
+**LightGBM** detects **96.0%** of attacks on 52,644 held-out flows while alerting on **26.74%** of benign traffic (F1 0.7890, PR-AUC 0.9485).
 
 | Metric | Value |
 |---|---|
-| **Model** | XGBoost |
-| **Operating threshold** | 0.505 (tuned on validation) |
-| **Attack recall** | **91.12%** |
-| **Precision** | 91.06% |
-| **F1** | **0.9109** |
-| **ROC-AUC** | 0.9824 |
-| **PR-AUC** | 0.9791 |
-| **False-negative rate** | 8.88% (1,212 attacks missed) |
-| **False-positive rate** | 7.142% (1,221 false alerts) |
-| **Throughput** | 195,353 flows/second |
-| **Test-set size** | 30,737 unseen flows |
+| **Model** | LightGBM |
+| **Operating threshold** | 0.465 (tuned on validation) |
+| **Attack recall** | **96.04%** |
+| **Precision** | 66.95% |
+| **F1** | **0.7890** |
+| **ROC-AUC** | 0.9648 |
+| **PR-AUC** | 0.9485 |
+| **False-negative rate** | 3.96% (751 attacks missed) |
+| **False-positive rate** | 26.736% (9,000 false alerts) |
+| **Throughput** | 82,396 flows/second |
+| **Test-set size** | 52,644 unseen flows |
 
 **But the headline numbers are not the contribution.** Three findings from this
 project change how the result should be read:
@@ -64,7 +65,7 @@ project change how the result should be read:
 | Finding | Why it matters |
 |---|---|
 | **40.4% of UNSW-NB15 is duplicated**, and duplication is class-correlated (Generic 87.6%, Normal 8.1%) | Benchmarks that split randomly without deduplicating score models partly on rows they memorised. This project deduplicates **before** splitting and measures the difference. |
-| **A capture artefact inflates performance.** The testbed ran benign and attack generators on hosts with different initial TTL values, and SHAP attributes 54% of total decision impact to the TTL family | `sttl` partly encodes *which generator* produced a flow, not whether it is hostile. A dedicated ablation retrains without it. |
+| **A capture artefact inflates performance.** The testbed ran benign and attack generators on hosts with different initial TTL values, and SHAP attributes 53% of total decision impact to the TTL family | `sttl` partly encodes *which generator* produced a flow, not whether it is hostile. A dedicated ablation retrains without it. |
 | **Detection quality is not uniform across attack families** | Aggregate recall conceals substantially weaker performance on stealthy, low-volume families — precisely the ones a defender most wants caught. |
 
 **Recommendation:** deploy as a **human-in-the-loop triage ranking layer**, not
@@ -263,11 +264,11 @@ Held-out test split, at each model's operating threshold:
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC | FPR | FNR | Throughput |
 |---|---|---|---|---|---|---|---|---|---|
-| Logistic Regression | 0.8669 | 0.8106 | 0.9134 | 0.8590 | 0.9556 | 0.9415 | 17.028% | 8.657% | 193,909/s |
-| Random Forest | 0.9172 | 0.9010 | 0.9137 | 0.9073 | 0.9811 | 0.9773 | 8.008% | 8.628% | 131,445/s |
-| XGBoost | 0.9208 | 0.9106 | 0.9112 | 0.9109 | 0.9824 | 0.9791 | 7.142% | 8.884% | 195,353/s |
-| LightGBM | 0.9209 | 0.9089 | 0.9134 | 0.9112 | 0.9825 | 0.9791 | 7.306% | 8.657% | 107,835/s |
-| Isolation Forest | 0.6061 | 0.6719 | 0.2199 | 0.3314 | 0.6707 | 0.5912 | 8.570% | 78.009% | 65,303/s |
+| Logistic Regression | 0.7442 | 0.5901 | 0.9517 | 0.7285 | 0.9193 | 0.8789 | 37.273% | 4.831% | 280,200/s |
+| Random Forest | 0.8244 | 0.6784 | 0.9752 | 0.8002 | 0.9669 | 0.9493 | 26.068% | 2.481% | 83,001/s |
+| XGBoost | 0.8231 | 0.6800 | 0.9622 | 0.7968 | 0.9673 | 0.9526 | 25.536% | 3.777% | 141,012/s |
+| LightGBM | 0.8148 | 0.6695 | 0.9604 | 0.7890 | 0.9648 | 0.9485 | 26.736% | 3.956% | 82,396/s |
+| Isolation Forest | 0.6469 | 0.5164 | 0.3265 | 0.4001 | 0.6795 | 0.5047 | 17.242% | 67.348% | 58,669/s |
 
 **Selection criterion: validation PR-AUC — deliberately not accuracy.** On a
 corpus where attacks are ~44% of records, accuracy compresses every model into a
@@ -295,7 +296,7 @@ the `keep_duplicates` ablation measures the optimism that decision removes.
 ### 2. A capture artefact does much of the work
 
 A lookup rule on `sttl` alone reaches 81.3% accuracy against a 55.6% majority-class baseline.
-SHAP attributes **54% of total decision impact** to the TTL feature family.
+SHAP attributes **53% of total decision impact** to the TTL feature family.
 The features were **kept** — they are real fields a sensor observes, and deleting
 genuine signal on suspicion is its own error — but their contribution is measured
 rather than assumed.
@@ -304,12 +305,13 @@ rather than assumed.
 
 | Experiment | Recall | F1 | PR-AUC |
 |---|---|---|---|
-| Primary protocol (headline) | 0.9112 | 0.9109 | 0.9791 |
-| Duplicates retained | 0.9630 | 0.9607 | 0.9957 |
-| TTL features removed | 0.9075 | 0.9111 | 0.9789 |
-| Engineered features removed | 0.9158 | 0.9118 | 0.9794 |
-| SMOTE instead of class weights | 0.9124 | 0.9103 | 0.9789 |
-| Authors' published split | 0.9868 | 0.8881 | 0.9885 |
+| Primary protocol (published partition) | 0.9604 | 0.7890 | 0.9485 |
+| Pooled random split | 0.9022 | 0.9116 | 0.9793 |
+| Duplicates retained | 0.9516 | 0.9623 | 0.9959 |
+| TTL features removed | 0.9606 | 0.7801 | 0.9441 |
+| Engineered features removed | 0.9625 | 0.7925 | 0.9484 |
+| SMOTE instead of class weights | 0.9652 | 0.7863 | 0.9486 |
+| Published partition, as distributed | 0.9799 | 0.8907 | 0.9872 |
 
 ### 4. Engineered features add real signal
 
@@ -349,14 +351,14 @@ SHAP (TreeExplainer) is treated as a core deliverable, not an add-on.
 
 | # | Feature | Mean \|SHAP\| | Share of impact |
 |---|---|---|---|
-| 1 | `sttl` | 4.6889 | 48.0% |
-| 2 | `ct_dst_src_ltm` | 0.6891 | 7.1% |
-| 3 | `ct_state_ttl` | 0.5415 | 5.5% |
-| 4 | `dbytes` | 0.4650 | 4.8% |
-| 5 | `service_dns` | 0.3177 | 3.3% |
-| 6 | `sbytes` | 0.2302 | 2.4% |
-| 7 | `dmean` | 0.1772 | 1.8% |
-| 8 | `smean` | 0.1606 | 1.6% |
+| 1 | `sttl` | 5.7510 | 38.3% |
+| 2 | `ct_state_ttl` | 1.7088 | 11.4% |
+| 3 | `ct_srv_dst` | 0.7684 | 5.1% |
+| 4 | `ct_dst_src_ltm` | 0.6490 | 4.3% |
+| 5 | `dttl` | 0.5367 | 3.6% |
+| 6 | `ct_srv_src` | 0.4217 | 2.8% |
+| 7 | `service_dns` | 0.3776 | 2.5% |
+| 8 | `dmean` | 0.3359 | 2.2% |
 
 **What makes traffic look malicious:** high source TTL, an unanswered connection
 (no destination packets, no completed handshake), strongly asymmetric direction,
@@ -433,9 +435,13 @@ AI_Capstone_Network_Intrusion_Detection/
 │   ├── eda.py                   ← all EDA figures
 │   ├── document.py              ← dataset documentation + data dictionary
 │   ├── plotting.py              ← shared figure styling
+│   ├── feature_analysis.py      ← mutual-information filter + PCA supplement
 │   ├── make_notebooks.py        ← generates and executes the six notebooks
 │   ├── deliverables.py          ← .docx / .pptx submission bundle
 │   └── report*.py               ← generated reports and decks
+│
+├── scripts/
+│   └── verify_project.py        ← independent artefact verification
 │
 ├── models/                      ← fitted pipelines + deployment.json
 ├── figures/                     ← all publication-quality figures
@@ -464,8 +470,9 @@ AI_Capstone_Network_Intrusion_Detection/
 │
 └── tests/
     ├── conftest.py
-    ├── test_preprocessing.py    ← leakage controls
+    ├── test_preprocessing.py    ← leakage controls, split disjointness
     ├── test_features.py         ← numerical safety, row-wise independence
+    ├── test_evaluate.py         ← Wilson intervals against the score test
     └── test_prediction.py       ← inference API
 ```
 
@@ -547,12 +554,14 @@ AI-assistance disclosure:
 |---|---|
 | Global seed | `random_state = 42` in `src/config.py`, used everywhere |
 | Dataset integrity | Row counts, schema, target encoding and SHA-256 verified on load |
-| Environment | `requirements.txt`, `environment.yml`, `reports/environment_versions.txt` |
+| Environment | `requirements.txt` (ranges), `requirements-lock.txt` (exact versions used here), `environment.yml` |
 | Paths | All derived from the repo root via `pathlib` — no absolute paths anywhere |
-| Split protocol | Stratified 60/20/20 on `attack_cat`, materialised to `data/processed/` |
-| Leakage prevention | Single enforcement point (`split_xy`); verified by tests |
+| Split protocol | The authors' published partition: each side deduplicated, validation carved from the training file (stratified on `attack_cat`), test records overlapping development removed |
+| Leakage prevention | Single enforcement point (`split_xy`); split disjointness asserted by tests and re-checked by `scripts/verify_project.py` |
 | Results provenance | Every number written to `reports/metrics/`; reports generated from it |
 | Tuning record | `models/best_params_main.json` + `models/manifest_main.json` |
+| Independent check | `scripts/verify_project.py` recomputes the headline metrics from the saved model and verifies figures, notebooks, decks and links |
+| Continuous integration | `.github/workflows/tests.yml` runs the suite and the verifier on Python 3.11 and 3.13 |
 
 Full reproduction from a clean checkout:
 
@@ -561,6 +570,7 @@ pip install -r requirements.txt
 python -m src.data_loader
 python -m src.pipeline --all
 pytest -q
+python scripts/verify_project.py
 ```
 
 Deleting `reports/*.md` and re-running `python -m src.report` regenerates every

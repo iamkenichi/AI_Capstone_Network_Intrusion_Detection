@@ -1,6 +1,6 @@
 {
-  "experiment": "official_split",
-  "description": "The dataset authors' published train/test partition, duplicates intact.",
+  "experiment": "official_split_raw",
+  "description": "The published partition exactly as distributed - no deduplication, no overlap removal.",
   "settings": {
     "include_engineered": true,
     "exclude": [],

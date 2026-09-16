@@ -239,6 +239,25 @@ def threshold_analysis(
 # --------------------------------------------------------------------------- #
 # Subgroup / operational audit
 # --------------------------------------------------------------------------- #
+def wilson_interval(successes: int, trials: int, z: float = 1.96) -> tuple[float, float]:
+    """95% Wilson score interval for a proportion.
+
+    Reported alongside every per-group recall because several attack families are
+    small - Worms has 43 flows in the test split - and a bare point estimate
+    invites conclusions the sample size cannot support. Wilson rather than the
+    normal approximation because it stays inside [0, 1] and behaves sensibly at
+    proportions near 0 and 1, which is exactly where these families sit.
+    """
+    if trials <= 0:
+        return (float("nan"), float("nan"))
+    phat = successes / trials
+    denominator = 1.0 + z**2 / trials
+    centre = phat + z**2 / (2 * trials)
+    margin = z * np.sqrt(phat * (1 - phat) / trials + z**2 / (4 * trials**2))
+    return (round(float(max(0.0, (centre - margin) / denominator)), 6),
+            round(float(min(1.0, (centre + margin) / denominator)), 6))
+
+
 def subgroup_audit(
     frame: pd.DataFrame,
     y_true: pd.Series,
@@ -284,6 +303,8 @@ def subgroup_audit(
                 "n_attack": int(gt.sum()),
                 "n_benign": int((gt == 0).sum()),
                 "recall": float(tp / (tp + fn)) if (tp + fn) else np.nan,
+                "recall_ci_low": wilson_interval(int(tp), int(tp + fn))[0],
+                "recall_ci_high": wilson_interval(int(tp), int(tp + fn))[1],
                 "false_negative_rate": float(fn / (tp + fn)) if (tp + fn) else np.nan,
                 "precision": np.nan if is_family else (
                     float(tp / (tp + fp)) if (tp + fp) else np.nan),
@@ -594,15 +615,26 @@ def fig_subgroup_audit(
     fig, axes = plt.subplots(1, 2, figsize=(15, 5.8))
 
     colors = [plotting.rate_to_color(1 - r) for r in families["recall"]]
-    bars = axes[0].barh(families["group"], families["recall"] * 100,
-                        color=colors, edgecolor="#666666", linewidth=0.5, height=0.7)
+    axes[0].barh(families["group"], families["recall"] * 100,
+                 color=colors, edgecolor="#666666", linewidth=0.5, height=0.7)
+    if {"recall_ci_low", "recall_ci_high"} <= set(families.columns):
+        # 95% Wilson intervals. Worms and Backdoor are small enough that their
+        # point estimates would otherwise read as far more certain than they are.
+        lower = (families["recall"] - families["recall_ci_low"]) * 100
+        upper = (families["recall_ci_high"] - families["recall"]) * 100
+        axes[0].errorbar(families["recall"] * 100, families["group"],
+                         xerr=np.vstack([lower, upper]), fmt="none",
+                         ecolor="#333333", elinewidth=1.0, capsize=3, capthick=1.0)
     axes[0].set_xlim(0, 118)
     axes[0].set_xlabel("Recall (% of that family's flows detected)")
     axes[0].set_title("Detection rate by attack family")
-    plotting.annotate_bars(
-        axes[0], bars,
-        [f"{r:.1%} (n={int(n):,})" for r, n in zip(families["recall"], families["n_attack"])],
-        horizontal=True, pad=0.012, fontsize=8)
+    # Labels clear the whisker, not just the bar, so the two never collide.
+    has_ci = {"recall_ci_low", "recall_ci_high"} <= set(families.columns)
+    for y, (_, family) in enumerate(families.iterrows()):
+        right = family["recall_ci_high"] if has_ci else family["recall"]
+        axes[0].text(float(right) * 100 + 1.4, y,
+                     f"{family['recall']:.1%} (n={int(family['n_attack']):,})",
+                     va="center", ha="left", fontsize=8, color="#333333")
     plotting.despine(axes[0])
 
     colors2 = [plotting.rate_to_color(min(r * 8, 1.0)) for r in others["false_positive_rate"]]
@@ -625,6 +657,7 @@ def fig_subgroup_audit(
     worst_share = (float((worst_two["false_negative_rate"] * worst_two["n_attack"]).sum())
                    / total_missed if total_missed else float("nan"))
     spread = float(families["recall"].max() - families["recall"].min())
+    smallest = families.nsmallest(1, "n_attack").iloc[0]
 
     top_fp = others.iloc[0] if len(others) else None
     fp_line = (f"`{top_fp['group_type']}: {top_fp['group']}` alone alerts on "
@@ -634,11 +667,18 @@ def fig_subgroup_audit(
     fig.suptitle("Operational subgroup audit on the test split "
                  "(operational strata, not demographic groups)")
     fig.tight_layout(rect=(0, 0.06, 1, 0.93))
+    # Let the measured spread choose the adjective, rather than asserting one.
+    severity = ("conceals a severe and highly concentrated weakness" if spread >= 0.30 else
+                "still hides an uneven picture" if spread >= 0.10 else
+                "is, unusually, a fair summary of the per-family picture")
     plotting.caption(fig, (
         f"Left: recall spans {spread:.0%} across families, from "
-        f"{worst_two.iloc[0]['recall']:.1%} on {worst_two.iloc[0]['group']} to 100%. The two "
-        f"weakest families account for {worst_share:.0%} of every attack the model missed, so "
-        "the aggregate recall figure conceals a highly concentrated failure. "
+        f"{worst_two.iloc[0]['recall']:.1%} on {worst_two.iloc[0]['group']} to "
+        f"{families['recall'].max():.1%}. The two weakest account for {worst_share:.0%} of "
+        f"every attack missed, so the aggregate recall figure {severity}. Error bars are 95% "
+        "Wilson intervals: a small family can be consistent with perfect recall without "
+        f"demonstrating it - {smallest['group']} is {int(smallest['n_attack'])} flows, and its "
+        f"interval runs down to {smallest['recall_ci_low']:.1%}. "
         f"Right: false alerts are not spread evenly either - {fp_line}That concentration is "
         "directly actionable through per-service thresholds or suppression rules, and it is also "
         "a warning: a stratum with an elevated false-positive rate is one where analysts learn to "
@@ -657,12 +697,13 @@ def fig_ablation_comparison(
     labels, recalls, precisions, f1s, prs = [], [], [], [], []
     by_key: dict[str, pd.Series] = {}
     pretty = {
-        "main": "Primary protocol",
+        "main": "Primary\n(published partition)",
+        "pooled_random": "Pooled random split",
         "keep_duplicates": "Duplicates retained",
         "no_ttl": "TTL features removed",
         "no_engineered": "No engineered features",
         "smote": "SMOTE instead of weights",
-        "official_split": "Authors' published split",
+        "official_split_raw": "Published, as distributed",
     }
     for key, table in ablations.items():
         if model_key not in table.index:
@@ -675,7 +716,9 @@ def fig_ablation_comparison(
         prs.append(table.loc[model_key, "pr_auc"])
 
     x = np.arange(len(labels))
-    fig, ax = plt.subplots(figsize=(12.5, 5.6))
+    # Seven conditions with multi-word names need the extra width; without it the
+    # tick labels of adjacent groups run into each other.
+    fig, ax = plt.subplots(figsize=(15.5, 5.8))
     series = [("Recall", recalls, config.COLOR_ATTACK),
               ("Precision", precisions, config.COLOR_BENIGN),
               ("F1", f1s, config.COLOR_ACCENT),
@@ -685,7 +728,13 @@ def fig_ablation_comparison(
         bars = ax.bar(x + i * width - 1.5 * width, values, width=width * 0.92,
                       color=color, label=label)
         plotting.annotate_bars(ax, bars, [f"{v:.3f}" for v in values], fontsize=7)
-    ax.set_xticks(x, labels, fontsize=9)
+    ax.set_xticks(x, [label.replace(" instead of ", "\ninstead of ")
+                      .replace(", as ", ",\nas ")
+                      .replace("No engineered ", "No engineered\n")
+                      .replace("TTL features ", "TTL features\n")
+                      .replace("Pooled random ", "Pooled random\n")
+                      .replace("Duplicates ", "Duplicates\n") for label in labels],
+                  fontsize=8.5)
     ax.set_ylim(0, 1.09)
     ax.set_ylabel("Score on that experiment's test split")
     ax.set_title(f"{DISPLAY_NAMES[model_key]} under each experimental condition")
@@ -703,26 +752,37 @@ def _ablation_caption(by_key: dict[str, pd.Series]) -> str:
     if base is None:
         return ("Each bar group is a separate end-to-end experiment with its own split, so the "
                 "bars are comparable in interpretation but not paired observation-for-observation.")
-    parts = ["Each bar group is a separate end-to-end experiment with its own split."]
+    parts = ["Each bar group is a separate end-to-end experiment with its own split. The "
+             "primary protocol is the authors' published partition with each side deduplicated "
+             "and train/test overlap removed - deliberately the hardest of these conditions."]
+
+    pooled = by_key.get("pooled_random")
+    if pooled is not None:
+        parts.append(
+            f"Pooling both files and splitting at random instead - the protocol most published "
+            f"UNSW-NB15 results use - raises F1 from {base['f1']:.3f} to {pooled['f1']:.3f} "
+            f"({pooled['f1'] - base['f1']:+.3f}) and drops FPR from "
+            f"{base['false_positive_rate']:.1%} to {pooled['false_positive_rate']:.1%}, because a "
+            "random split guarantees train and test share a distribution and the published "
+            "partition does not.")
 
     dup = by_key.get("keep_duplicates")
-    if dup is not None:
-        dup_share = 1.0 - float(base["n"]) / float(dup["n"])
+    if dup is not None and pooled is not None:
         parts.append(
-            f"Leaving the {dup_share:.1%} duplicated records in raises F1 from {base['f1']:.3f} to "
-            f"{dup['f1']:.3f} (+{dup['f1'] - base['f1']:.3f}) without the model having learned "
-            "anything more - that gap is the size of the duplicate-leakage inflation present in "
-            "benchmarks that skip deduplication.")
+            f"Skipping deduplication as well takes it to {dup['f1']:.3f} "
+            f"({dup['f1'] - pooled['f1']:+.3f} against the pooled split it is paired with, which "
+            "differs from it in nothing else) - the model having learned nothing more.")
 
     ttl = by_key.get("no_ttl")
     if ttl is not None:
         delta = ttl["f1"] - base["f1"]
-        direction = "unchanged" if abs(delta) < 0.005 else ("higher" if delta > 0 else "lower")
         parts.append(
-            f"Dropping the TTL features leaves F1 {direction} at {ttl['f1']:.3f} "
-            f"({delta:+.4f}), so although SHAP attributes most of the model's signal to `sttl`, "
-            "the remaining features carry near-equivalent information and the capture artefact is "
-            "not load-bearing for the boosted-tree result.")
+            f"Dropping the three TTL columns moves F1 to {ttl['f1']:.3f} ({delta:+.4f}) - a real "
+            "but small cost, and far smaller than the share of decision impact SHAP attributes to "
+            "that family. The model *uses* the capture artefact much more than it *needs* it: the "
+            "remaining features carry near-equivalent information and the boosted tree re-routes "
+            "through them. Attribution is not necessity, and removing a feature because SHAP "
+            "ranks it highly would have changed the explanation more than the behaviour.")
 
     eng = by_key.get("no_engineered")
     if eng is not None:
@@ -730,13 +790,13 @@ def _ablation_caption(by_key: dict[str, pd.Series]) -> str:
             f"The 15 engineered features are likewise not decisive ({eng['f1']:.3f} without them, "
             f"{eng['f1'] - base['f1']:+.4f}); they buy interpretability, not accuracy.")
 
-    off = by_key.get("official_split")
-    if off is not None:
+    raw = by_key.get("official_split_raw")
+    if raw is not None:
         parts.append(
-            f"On the authors' published split, precision collapses to {off['precision']:.3f} "
-            f"(FPR {off['false_positive_rate']:.1%}) while recall rises to {off['recall']:.3f} - "
-            "the same model, re-partitioned, is a materially different detector, which is the "
-            "clearest evidence here that these numbers do not transfer unchanged to a new network.")
+            f"Taking the published partition exactly as distributed, with its duplicates and "
+            f"its train/test overlap left in, gives F1 {raw['f1']:.3f} "
+            f"({raw['f1'] - base['f1']:+.3f}) - the cost of the two cleaning steps this project "
+            "applies before reporting anything.")
     return " ".join(parts)
 
 

@@ -9,10 +9,10 @@
   "random_state": 42,
   "cv_folds": 5,
   "tuning_scorer": "f1",
-  "n_train_rows": 102572,
-  "n_val_rows": 30737,
+  "n_train_rows": 82904,
+  "n_val_rows": 20208,
   "train_attack_rate": 0.5,
-  "val_attack_rate": 0.4438,
+  "val_attack_rate": 0.48718,
   "scale_pos_weight_used": 1.0,
   "models": [
     "isolation_forest",

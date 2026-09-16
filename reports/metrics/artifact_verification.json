@@ -1,0 +1,57 @@
+{
+  "passed": 10,
+  "skipped": 0,
+  "failed": 0,
+  "checks": [
+    {
+      "check": "required files present",
+      "status": "pass",
+      "detail": "9 files"
+    },
+    {
+      "check": "dataset SHA-256 matches recorded provenance",
+      "status": "pass",
+      "detail": "2 files"
+    },
+    {
+      "check": "train / validation / test are pairwise disjoint",
+      "status": "pass",
+      "detail": "train 80,832 / val 20,208 / test 52,644"
+    },
+    {
+      "check": "persisted feature schema excludes every leakage column",
+      "status": "pass",
+      "detail": "42 predictor columns, none leaking"
+    },
+    {
+      "check": "headline test metrics recompute from the saved model",
+      "status": "pass",
+      "detail": "F1 0.788999, PR-AUC 0.948511 on n=52,644"
+    },
+    {
+      "check": "every figure referenced by a report exists and is a valid PNG",
+      "status": "pass",
+      "detail": "24 figures"
+    },
+    {
+      "check": "every notebook is fully executed with no errors",
+      "status": "pass",
+      "detail": "6 notebooks, all executed cleanly"
+    },
+    {
+      "check": "both decks match their content files",
+      "status": "pass",
+      "detail": "Technical 12, Executive 10"
+    },
+    {
+      "check": "local links in README.md resolve",
+      "status": "pass",
+      "detail": "29 links checked"
+    },
+    {
+      "check": "no report contains an unfilled placeholder",
+      "status": "pass",
+      "detail": "all reports fully populated"
+    }
+  ]
+}

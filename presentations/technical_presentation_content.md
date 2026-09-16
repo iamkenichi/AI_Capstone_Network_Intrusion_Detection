@@ -13,7 +13,7 @@
 - Machine Learning-Based Network Intrusion Detection and Anomaly Classification
 - Binary classification of network flows: benign vs. malicious
 - Dataset: UNSW-NB15 (257,673 flow records, 10 attack families)
-- Selected model: **XGBoost** — F1 0.9109, recall 91.12%, PR-AUC 0.9791
+- Selected model: **LightGBM** — F1 0.7890, recall 96.04%, PR-AUC 0.9485
 
 **Recommended visual:** Title slide with the architecture diagram from README.md as a faded background.
 
@@ -99,14 +99,14 @@
 
 | Model | Recall | Precision | F1 | PR-AUC | FPR |
 |---|---|---|---|---|---|
-| Logistic Regression | 0.9134 | 0.8106 | 0.8590 | 0.9415 | 17.028% |
-| Random Forest | 0.9137 | 0.9010 | 0.9073 | 0.9773 | 8.008% |
-| XGBoost | 0.9112 | 0.9106 | 0.9109 | 0.9791 | 7.142% |
-| LightGBM | 0.9134 | 0.9089 | 0.9112 | 0.9791 | 7.306% |
-| Isolation Forest | 0.2199 | 0.6719 | 0.3314 | 0.5912 | 8.570% |
+| Logistic Regression | 0.9517 | 0.5901 | 0.7285 | 0.8789 | 37.273% |
+| Random Forest | 0.9752 | 0.6784 | 0.8002 | 0.9493 | 26.068% |
+| XGBoost | 0.9622 | 0.6800 | 0.7968 | 0.9526 | 25.536% |
+| LightGBM | 0.9604 | 0.6695 | 0.7890 | 0.9485 | 26.736% |
+| Isolation Forest | 0.3265 | 0.5164 | 0.4001 | 0.5047 | 17.242% |
 
-- Selected **XGBoost** on validation **PR-AUC — not accuracy**
-- Accuracy compresses every model into a narrow band on a 44%-positive corpus and rewards majority-class performance
+- Selected **LightGBM** on validation **PR-AUC — not accuracy**
+- Accuracy compresses every model into a narrow band on a 36%-positive corpus and rewards majority-class performance
 
 **Recommended visual:** `figures/fig16_model_comparison.png`
 
@@ -118,10 +118,10 @@
 
 **Content**
 - SHAP TreeExplainer: global importance, beeswarm, dependence, and four local cases (TP / TN / FP / FN)
-- Top drivers: `sttl`, `ct_dst_src_ltm`, `ct_state_ttl`, `dbytes`, `service_dns`
+- Top drivers: `sttl`, `ct_state_ttl`, `ct_srv_dst`, `ct_dst_src_ltm`, `dttl`
 - **Toward ATTACK:** high source TTL, no destination response, no completed handshake, asymmetric direction
 - **Toward BENIGN:** completed handshake with sequence exchange, balanced bidirectional volume, identified service
-- **Artefact diagnostic:** the TTL family carries 54% of total attributed impact
+- **Artefact diagnostic:** the TTL family carries 53% of total attributed impact
 
 **Recommended visual:** `figures/fig21_shap_beeswarm.png`, then `figures/fig24_shap_artifact_check.png`
 
@@ -132,9 +132,9 @@
 ## Slide 9 — Error & Bias Analysis
 
 **Content**
-- Recall varies substantially by attack family; weakest: Analysis (59%), Fuzzers (74%), Shellcode (96%), Exploits (98%)
+- Recall varies substantially by attack family; weakest: Fuzzers (84%), Analysis (97%), Shellcode (99%), Exploits (99%)
 - Three distinguishable mechanisms: **scarcity** (fixable with data), **behavioural overlap with benign traffic** (not fixable), **duplication-distorted training counts**
-- Missed attacks are **near-misses** — median score 0.35 against a 0.505 threshold, only 2% below 0.10, so the threshold is the dominant lever and borderline review genuinely helps
+- Missed attacks are **near-misses** — median score 0.27 against a 0.465 threshold, only 17% below 0.10, so the threshold is the dominant lever and borderline review genuinely helps
 - False alerts concentrate in specific services → actionable via per-service thresholds
 - **UNSW-NB15 has no demographic attributes.** This is an *operational* performance audit; no demographic fairness claim is made or possible
 
@@ -150,18 +150,20 @@
 
 | Experiment | Recall | F1 | PR-AUC |
 |---|---|---|---|
-| Primary protocol | 0.9112 | 0.9109 | 0.9791 |
-| Duplicates kept | 0.9630 | 0.9607 | 0.9957 |
-| TTL removed | 0.9075 | 0.9111 | 0.9789 |
-| No engineered features | 0.9158 | 0.9118 | 0.9794 |
-| SMOTE | 0.9124 | 0.9103 | 0.9789 |
-| Published split | 0.9868 | 0.8881 | 0.9885 |
+| Primary protocol (published partition) | 0.9604 | 0.7890 | 0.9485 |
+| Pooled random split | 0.9022 | 0.9116 | 0.9793 |
+| Duplicates retained | 0.9516 | 0.9623 | 0.9959 |
+| TTL features removed | 0.9606 | 0.7801 | 0.9441 |
+| Engineered features removed | 0.9625 | 0.7925 | 0.9484 |
+| SMOTE instead of class weights | 0.9652 | 0.7863 | 0.9486 |
+| Published partition, as distributed | 0.9799 | 0.8907 | 0.9872 |
 
-- **Duplicates retained → F1 +0.0498.** Skipping deduplication would have handed back a better-looking number for no better model
-- **TTL removed → F1 +0.0003.** SHAP's top feature turns out to be *redundant, not necessary* — the model re-routes through correlated features
-- **No engineered features → F1 +0.0010.** The 15 domain features buy interpretability, not accuracy — reported as the negative result it is
-- **SMOTE → F1 -0.0005.** Tested rather than assumed, and not adopted
-- **Published split → precision 0.911 → 0.807.** Same model, different partition, different detector
+- **Pooled random split → F1 +0.1226.** The protocol most published results use. We report the harder published partition instead
+- **Duplicates retained → F1 +0.0507** (vs the pooled split)**.** Skipping deduplication hands back a better-looking number for no better model
+- **TTL removed → F1 -0.0089.** SHAP's top feature is *used far more than it is needed* — the model re-routes through correlated features
+- **No engineered features → F1 +0.0035.** The 15 domain features buy interpretability, not accuracy — reported as the negative result it is
+- **SMOTE → F1 -0.0027.** Tested rather than assumed, and not adopted
+- **Partition as distributed → F1 +0.1017.** What the two cleaning steps (dedup each side, remove train/test overlap) are worth
 
 **Recommended visual:** `figures/fig19_ablation_comparison.png`
 
@@ -173,9 +175,9 @@
 
 **Content**
 - Flow collector → feature extraction → model → **risk-banded triage queue** → analyst → response
-- Operating threshold **0.505**, chosen on validation; a low-FPR alternative is published for capacity-limited SOCs
+- Operating threshold **0.465**, chosen on validation; a low-FPR alternative is published for capacity-limited SOCs
 - Cost assumption stated openly: 20:1 FN:FP, with a sensitivity table
-- Measured throughput: **195,353 flows/second** on one commodity CPU
+- Measured throughput: **82,396 flows/second** on one commodity CPU
 - Streamlit prototype: single-flow scoring, batch upload, live threshold control, per-alert SHAP
 
 **Recommended visual:** `figures/fig17_threshold_analysis.png` plus a Streamlit screenshot.
@@ -187,8 +189,8 @@
 ## Slide 12 — Limitations & Conclusions
 
 **Content**
-- **Achieved:** F1 0.9109, ROC-AUC 0.9824, PR-AUC 0.9791, recall 91.12%, FPR 7.142% — all pre-registered targets met
-- **Qualified by:** a capture artefact the model uses but does not need (shown by ablation, not assumed), uneven per-family recall, and precision that will not transfer to a production base rate
+- **Achieved:** F1 0.7890, ROC-AUC 0.9648, PR-AUC 0.9485, recall 96.04%, FPR 26.736% — 3/4 pre-registered targets met on this harder protocol (F1 short); all met on the pooled random split
+- **Qualified by:** a capture artefact the model leans on far more than it needs (measured by ablation, not assumed), uneven per-family recall, and precision that will not transfer to a production base rate
 - **Cannot measure:** concept drift — timestamps were removed from the partitioned files
 - **Recommendation:** human-in-the-loop triage ranking, recalibrated on target-network traffic. Not autonomous blocking
 - **Next:** multiclass family classification, cross-dataset validation (CIC-IDS2017), adversarial robustness testing

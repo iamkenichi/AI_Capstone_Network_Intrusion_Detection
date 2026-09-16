@@ -540,9 +540,13 @@ three leakage controls the project claims are real rather than asserted:
         md("""
 ## 1. Corpus preparation
 
-Deduplication happens **before** the split. Doing it afterwards would leave
+Deduplication happens **before** any split. Doing it afterwards would leave
 identical vectors straddling train and test — precisely the problem it exists to
 prevent.
+
+The cell below profiles the pooled corpus, which is how the duplication problem
+is best *seen*. The primary protocol in section 2 does not pool: it keeps the
+authors' partition and deduplicates each side separately.
 """),
         code("""
 from src import preprocessing
@@ -554,34 +558,57 @@ for key in ("rows_loaded", "duplicate_rows", "duplicate_fraction",
             "conflicting_feature_vectors", "rows_final", "missing_values"):
     print(f"  {key:<30} {report[key]}")
 """),
-        md("## 2. Stratified split"),
+        md("## 2. The primary split protocol"),
         code("""
-train, val, test = preprocessing.split_corpus(corpus, verbose=True)
+# The PRIMARY protocol: the authors' published partition, each side
+# deduplicated, with development/test overlap removed. The pooled random split
+# above is the easier alternative, carried as the `pooled_random` ablation.
+train, val, test, manifest = preprocessing.split_published(verbose=True)
+
+print()
+for key, value in manifest.items():
+    print(f"  {key:<34} {value}")
 
 distribution = pd.DataFrame({
     name: part["attack_cat"].value_counts(normalize=True)
     for name, part in (("train", train), ("val", val), ("test", test))
 }).sort_values("train", ascending=False)
-print("\\nAttack-family proportions are preserved across all three splits:")
+print("\\nAttack-family proportions, development vs the published test file:")
 display(distribution.style.format("{:.4f}"))
 """),
         md("""
-Stratification is on **`attack_cat`**, not on `label`. Because `label` is a
-deterministic function of `attack_cat`, stratifying on the family stratifies the
-binary target as a side effect — while additionally guaranteeing that rare
-families (Worms, n=164 after deduplication) appear in all three splits. The
-binary label alone would not ensure that.
+Read the last column against the first two. The development splits match each
+other closely, because validation is a stratified draw from the same file. The
+**test column does not** — it is a different capture, and that mismatch is the
+distribution shift the primary protocol exists to expose. A pooled random split
+would have eliminated it by construction.
 """),
         code("""
-predictors = [c for c in corpus.columns if c not in (*config.LEAKAGE_COLUMNS, "partition")]
+predictors = [c for c in train.columns
+              if c not in (*config.LEAKAGE_COLUMNS, "partition")]
 
-def vectors(frame):
-    return set(map(tuple, frame[predictors].itertuples(index=False)))
+def signatures(frame):
+    return set(map(tuple, frame[predictors].itertuples(index=False, name=None)))
 
-train_v, val_v, test_v = vectors(train), vectors(val), vectors(test)
-print(f"Feature vectors shared between train and test : {len(train_v & test_v)}")
-print(f"Feature vectors shared between train and val  : {len(train_v & val_v)}")
-print("\\nZero overlap => the test metrics measure generalisation, not memorisation.")
+s_train, s_val, s_test = signatures(train), signatures(val), signatures(test)
+print("Shared feature vectors between splits (all must be zero):")
+print(f"  train n val   {len(s_train & s_val)}")
+print(f"  train n test  {len(s_train & s_test)}")
+print(f"  val   n test  {len(s_val & s_test)}")
+assert not (s_train & s_val) and not (s_train & s_test) and not (s_val & s_test)
+print("\\nNo feature vector appears in more than one split.")
+"""),
+        md("""
+Stratification of the development split is on **`attack_cat`**, not on `label`.
+Because `label` is a deterministic function of `attack_cat`, stratifying on the
+family stratifies the binary target as a side effect — while additionally
+guaranteeing that rare families appear in both train and validation. The binary
+label alone would not ensure that.
+
+The zero-overlap result above is the one that matters: it means the test metrics
+measure generalisation rather than memorisation. Note that deduplicating each
+partition does **not** give this for free — a record present in both published
+files survives both passes, which is what the overlap-removal step catches.
 """),
         md("## 3. Leakage enforcement"),
         code("""
@@ -1103,11 +1130,13 @@ else:
 
 | Experiment | The question it answers |
 |---|---|
+| `main` | The primary protocol: the authors' published partition, each side deduplicated and train/test overlap removed. |
+| `pooled_random` | How much easier is the pooled random split that most published results use? |
 | `keep_duplicates` | How much are published UNSW-NB15 benchmarks inflated by repeated records? |
 | `no_ttl` | How much of the score is *testbed recognition* rather than *attack detection*? |
 | `no_engineered` | What did the 15 constructed features actually contribute? |
 | `smote` | Does synthetic oversampling beat class weighting here, or not? |
-| `official_split` | Does the result hold under the authors' own partition? |
+| `official_split_raw` | What are the two cleaning steps worth, against the partition as distributed? |
 
 This table is what separates "the model detects attacks" from "the model detects
 this dataset."

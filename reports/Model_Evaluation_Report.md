@@ -10,11 +10,11 @@ transcribed by hand.*
 
 The order of operations is the substance of this report, not a formality:
 
-1. Score every trained model on the **validation** split (30,737 flows).
+1. Score every trained model on the **validation** split (20,208 flows).
 2. Select the deployment model from those validation numbers.
 3. Tune the decision threshold on the **validation** split, for that model only.
 4. Freeze model and threshold into `models/deployment.json`.
-5. Open the **test** split (30,737 flows) and score it **once**.
+5. Open the **test** split (52,644 flows) and score it **once**.
 
 Steps 1-4 never touch test data; step 5 changes no parameter. That is what lets
 the numbers in section 3 be read as an estimate of generalisation rather than as
@@ -39,21 +39,21 @@ the TTL features is what makes the unregularised L1 problem pathological.
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC |
 |---|---|---|---|---|---|---|
-| Logistic Regression | 0.8669 | 0.8106 | 0.9134 | 0.8590 | 0.9556 | 0.9415 |
-| Random Forest | 0.9172 | 0.9010 | 0.9137 | 0.9073 | 0.9811 | 0.9773 |
-| XGBoost | 0.9208 | 0.9106 | 0.9112 | 0.9109 | 0.9824 | 0.9791 |
-| LightGBM | 0.9209 | 0.9089 | 0.9134 | 0.9112 | 0.9825 | 0.9791 |
-| Isolation Forest | 0.6061 | 0.6719 | 0.2199 | 0.3314 | 0.6707 | 0.5912 |
+| Logistic Regression | 0.7442 | 0.5901 | 0.9517 | 0.7285 | 0.9193 | 0.8789 |
+| Random Forest | 0.8244 | 0.6784 | 0.9752 | 0.8002 | 0.9669 | 0.9493 |
+| XGBoost | 0.8231 | 0.6800 | 0.9622 | 0.7968 | 0.9673 | 0.9526 |
+| LightGBM | 0.8148 | 0.6695 | 0.9604 | 0.7890 | 0.9648 | 0.9485 |
+| Isolation Forest | 0.6469 | 0.5164 | 0.3265 | 0.4001 | 0.6795 | 0.5047 |
 
 ## 3. Operational error rates (test split)
 
 | Model | FPR | FNR | TP | FN | FP | TN |
 |---|---|---|---|---|---|---|
-| Logistic Regression | 17.028% | 8.657% | 12,461 | 1,181 | 2,911 | 14,184 |
-| Random Forest | 8.008% | 8.628% | 12,465 | 1,177 | 1,369 | 15,726 |
-| XGBoost | 7.142% | 8.884% | 12,430 | 1,212 | 1,221 | 15,874 |
-| LightGBM | 7.306% | 8.657% | 12,461 | 1,181 | 1,249 | 15,846 |
-| Isolation Forest | 8.570% | 78.009% | 3,000 | 10,642 | 1,465 | 15,630 |
+| Logistic Regression | 37.273% | 4.831% | 18,065 | 917 | 12,547 | 21,115 |
+| Random Forest | 26.068% | 2.481% | 18,511 | 471 | 8,775 | 24,887 |
+| XGBoost | 25.536% | 3.777% | 18,265 | 717 | 8,596 | 25,066 |
+| LightGBM | 26.736% | 3.956% | 18,231 | 751 | 9,000 | 24,662 |
+| Isolation Forest | 17.242% | 67.348% | 6,198 | 12,784 | 5,804 | 27,858 |
 
 **FPR** is the share of benign flows wrongly alerted - analyst workload.
 **FNR** is the share of attacks missed - residual security risk. These two, not
@@ -63,21 +63,21 @@ accuracy, are the numbers a SOC lead reads.
 
 | Model | Training time | Tuning time | Throughput | Latency / 1k flows (ms) | Features |
 |---|---|---|---|---|---|
-| Logistic Regression | 10.0s | 119.4s | 193,909/s | 5.1570 | 73 |
-| Random Forest | 16.6s | 1,762.9s | 131,445/s | 7.6080 | 73 |
-| XGBoost | 4.8s | 729.3s | 195,353/s | 5.1190 | 73 |
-| LightGBM | 5.1s | 698.0s | 107,835/s | 9.2730 | 73 |
-| Isolation Forest | 1.0s | n/a | 65,303/s | 15.3130 | n/a |
+| Logistic Regression | 6.9s | 89.3s | 280,200/s | 3.5690 | 73 |
+| Random Forest | 16.6s | 1,441.5s | 83,001/s | 12.0480 | 73 |
+| XGBoost | 4.7s | 726.8s | 141,012/s | 7.0920 | 73 |
+| LightGBM | 8.0s | 768.2s | 82,396/s | 12.1370 | 73 |
+| Isolation Forest | 1.0s | n/a | 58,669/s | 17.0450 | n/a |
 
 ## 5. Overfitting check
 
 | Model | CV F1 (train split) | CV F1 std | CV train - test F1 | Test F1 |
 |---|---|---|---|---|
-| Logistic Regression | 0.8586 | 0.0008 | 0.0003 | 0.8590 |
-| Random Forest | 0.9100 | 0.0005 | 0.0512 | 0.9073 |
-| XGBoost | 0.9131 | 0.0017 | 0.0466 | 0.9109 |
-| LightGBM | 0.9117 | 0.0007 | 0.0564 | 0.9112 |
-| Isolation Forest | n/a | n/a | n/a | 0.3314 |
+| Logistic Regression | 0.9045 | 0.0027 | 0.0003 | 0.7285 |
+| Random Forest | 0.9302 | 0.0023 | 0.0396 | 0.8002 |
+| XGBoost | 0.9328 | 0.0022 | 0.0442 | 0.7968 |
+| LightGBM | 0.9333 | 0.0015 | 0.0654 | 0.7890 |
+| Isolation Forest | n/a | n/a | n/a | 0.4001 |
 
 The `CV train - test F1` column is the gap between each model's score on data it
 was fitted on and its cross-validated score. A large positive gap indicates
@@ -89,21 +89,21 @@ the cross-validated and held-out test scores agree, which they do.
 | Model | Best configuration |
 |---|---|
 | Logistic Regression | `{"C": 73.92266140516048, "class_weight": null}` |
-| Random Forest | `{"class_weight": "balanced", "max_depth": 18, "max_features": 0.3, "min_samples_leaf": 1, "min_samples_split": 4, "n_estimators": 300}` |
-| XGBoost | `{"colsample_bytree": 0.92650472773368, "gamma": 0.14722444603479284, "learning_rate": 0.039320324807500945, "max_depth": 9, "min_child_weight": 1, "n_estimators": 455, "reg_alpha": 0.019068457927706083, "reg_lambda": 0.1699223584506862, "scale_pos_weight": 1.2532010556152868, "subsample": 0.9744619096643123}` |
-| LightGBM | `{"colsample_bytree": 0.9416401294594341, "learning_rate": 0.03168186815285065, "min_child_samples": 66, "n_estimators": 424, "num_leaves": 148, "reg_lambda": 0.05654846344501571, "scale_pos_weight": 1.2532010556152868, "subsample": 0.6002081507981263, "subsample_freq": 0}` |
+| Random Forest | `{"class_weight": "balanced_subsample", "max_depth": 18, "max_features": 0.3, "min_samples_leaf": 1, "min_samples_split": 9, "n_estimators": 362}` |
+| XGBoost | `{"colsample_bytree": 0.92650472773368, "gamma": 0.14722444603479284, "learning_rate": 0.039320324807500945, "max_depth": 9, "min_child_weight": 1, "n_estimators": 455, "reg_alpha": 0.019068457927706083, "reg_lambda": 0.1699223584506862, "scale_pos_weight": 1.0526155408836972, "subsample": 0.9744619096643123}` |
+| LightGBM | `{"colsample_bytree": 0.7468977981821954, "learning_rate": 0.06414090119572784, "min_child_samples": 19, "n_estimators": 753, "num_leaves": 143, "reg_lambda": 0.022706638025961814, "scale_pos_weight": 1.0, "subsample": 0.9583054382694077, "subsample_freq": 0}` |
 | Isolation Forest | `{"n_estimators": 300, "contamination": "auto", "fitted_on": "benign training flows only"}` |
 
 ---
 
 ## 7. Model selection
 
-**Selected: XGBoost.**
+**Selected: LightGBM.**
 
-Highest validation PR-AUC (0.9784), +0.0002 ahead of LightGBM (0.9783). Validation recall 0.9194, FPR 0.0742, throughput 195,353 flows/s.
+Highest validation PR-AUC (0.9858), +0.0003 ahead of XGBoost (0.9855). Validation recall 0.9510, FPR 0.0762, throughput 82,396 flows/s.
 
 **Why PR-AUC and not accuracy.** Accuracy on a
-44%-positive corpus compresses every model into a
+36%-positive corpus compresses every model into a
 narrow band and rewards majority-class performance. PR-AUC summarises how well a
 model *ranks* attacks above benign flows across all thresholds, on the positive
 class only - the quantity that survives when the deployment base rate differs
@@ -127,11 +127,11 @@ optimistic - and three candidate operating points were computed.
 
 | Operating point | Threshold | Recall | Precision | F1 | FPR | FNR | Missed attacks | False alerts |
 |---|---|---|---|---|---|---|---|---|
-| adopted_f1_optimal | 0.505 | 0.9112 | 0.9106 | 0.9109 | 7.142% | 8.884% | 1,212 | 1,221 |
-| fpr_constrained | 0.870 | 0.7698 | 0.9868 | 0.8649 | 0.819% | 23.024% | 3,141 | 140 |
-| default_0.50 | 0.500 | 0.9135 | 0.9087 | 0.9111 | 7.324% | 8.650% | 1,180 | 1,252 |
+| adopted_f1_optimal | 0.465 | 0.9604 | 0.6695 | 0.7890 | 26.736% | 3.956% | 751 | 9,000 |
+| fpr_constrained | 0.970 | 0.8336 | 0.8895 | 0.8607 | 5.840% | 16.637% | 3,158 | 1,966 |
+| default_0.50 | 0.500 | 0.9565 | 0.6779 | 0.7935 | 25.622% | 4.351% | 826 | 8,625 |
 
-**Adopted: 0.505** (F1-optimal on validation).
+**Adopted: 0.465** (F1-optimal on validation).
 
 ### Cost sensitivity
 
@@ -140,11 +140,11 @@ a false alert. That ratio is an **assumption, openly stated, not a measurement**
 
 | Assumed FN:FP cost ratio | Optimal threshold | Recall | FPR |
 |---|---|---|---|
-| 5:1 | 0.185 | 0.9905 | 22.649% |
-| 10:1 | 0.080 | 0.9996 | 27.849% |
-| 20:1 | 0.035 | 1.0000 | 28.293% |
-| 50:1 | 0.035 | 1.0000 | 28.293% |
-| 100:1 | 0.035 | 1.0000 | 28.293% |
+| 5:1 | 0.065 | 0.9966 | 17.225% |
+| 10:1 | 0.020 | 0.9996 | 19.078% |
+| 20:1 | 0.010 | 0.9999 | 19.521% |
+| 50:1 | 0.010 | 0.9999 | 19.521% |
+| 100:1 | 0.010 | 0.9999 | 19.521% |
 
 The project's working figure is 20:1 - deliberately conservative. Published
 breach-cost studies imply ratios in the hundreds, but a detector tuned at that
@@ -167,15 +167,15 @@ See `figures/fig17_threshold_analysis.png`.
 ## 9. Pre-registered targets
 
 The targets in `reports/problem_statement.md` were set **before** modelling.
-Measured against XGBoost at threshold 0.505 on the test split:
+Measured against LightGBM at threshold 0.465 on the test split:
 
 | # | Target | Achieved | Status |
 |---|---|---|---|
-| T1 | F1 >= 0.90 | 0.9109 | **MET** |
-| T2 | ROC-AUC >= 0.95 | 0.9824 | **MET** |
-| T3 | PR-AUC >= 0.90 | 0.9791 | **MET** |
-| T4 | Attack recall >= 0.90 | 0.9112 | **MET** |
-| T7 | Throughput >= 10,000 flows/s | 195,353/s | **MET** |
+| T1 | F1 >= 0.90 | 0.7890 | **NOT MET** |
+| T2 | ROC-AUC >= 0.95 | 0.9648 | **MET** |
+| T3 | PR-AUC >= 0.90 | 0.9485 | **MET** |
+| T4 | Attack recall >= 0.90 | 0.9604 | **MET** |
+| T7 | Throughput >= 10,000 flows/s | 82,396/s | **MET** |
 
 ---
 
@@ -185,34 +185,34 @@ Measured against XGBoost at threshold 0.505 on the test split:
 
 | Attack family | False-negative rate | Count missed |
 |---|---|---|
-| Analysis | 40.72% | 68 |
-| Fuzzers | 26.24% | 1,009 |
-| Shellcode | 3.78% | 11 |
-| Exploits | 1.98% | 102 |
-| DoS | 1.19% | 10 |
-| Reconnaissance | 0.40% | 7 |
-| Generic | 0.34% | 5 |
+| Fuzzers | 15.85% | 687 |
+| Analysis | 2.72% | 8 |
+| Shellcode | 0.82% | 3 |
+| Exploits | 0.66% | 47 |
+| DoS | 0.25% | 3 |
+| Reconnaissance | 0.13% | 3 |
 | Backdoor | 0.00% | 0 |
+| Generic | 0.00% | 0 |
 | Worms | 0.00% | 0 |
 
 ### False alerts, by service
 
 | Service | False-positive rate | Count |
 |---|---|---|
-| `pop3` | 100.00% | 1 |
-| `ftp` | 18.25% | 69 |
-| `-` | 9.02% | 1,031 |
-| `http` | 6.45% | 117 |
-| `smtp` | 0.23% | 1 |
-| `ftp-data` | 0.14% | 1 |
-| `dns` | 0.05% | 1 |
+| `radius` | 100.00% | 2 |
+| `ftp` | 41.30% | 311 |
+| `http` | 32.66% | 1,221 |
+| `-` | 30.60% | 7,465 |
+| `dns` | 0.03% | 1 |
+| `ftp-data` | 0.00% | 0 |
+| `smtp` | 0.00% | 0 |
 | `ssh` | 0.00% | 0 |
 
 ### How the model is wrong - near-misses or confident errors?
 
-The missed attacks are **near-misses, not confident errors**. Their median score is 0.3463 against a decision threshold of 0.505 - a gap of only 0.159 - and just 1.6% of them score below 0.10. Operationally that is the *better* of the two possible failure modes: it means the threshold is the dominant lever, that lowering it would recover a substantial share of these attacks (at a cost the Phase 10 sweep quantifies exactly), and that a 'review the borderline alerts' workflow would genuinely catch them rather than looking past them.
+The missed attacks are scored with **high confidence**: median 0.2680 against a 0.465 threshold, with 16.5% below 0.10. That is the worse failure mode - a borderline-review workflow cannot catch an error that never approaches the border, and lowering the threshold would recover few of them while adding many false alerts.
 
-The false alerts behave the same way: median score 0.6326, with only 8.4% above 0.90. Both error types concentrate near the decision boundary, which is exactly the regime in which the choice of operating threshold - rather than the choice of model - determines what a SOC experiences.
+The false alerts behave the same way: median score 0.8514, with only 40.9% above 0.90. Both error types concentrate near the decision boundary, which is exactly the regime in which the choice of operating threshold - rather than the choice of model - determines what a SOC experiences.
 
 Full per-group breakdowns are in `reports/metrics/subgroup_audit_main.csv` and
 `reports/Bias_Fairness_Analysis.md`.
@@ -227,16 +227,46 @@ time.
 
 | Experiment | Recall | Precision | F1 | PR-AUC | FNR |
 |---|---|---|---|---|---|
-| Primary protocol (headline result) | 0.9112 | 0.9106 | 0.9109 | 0.9791 | 8.884% |
-| Duplicates retained | 0.9630 | 0.9583 | 0.9607 | 0.9957 | 3.698% |
-| TTL features removed | 0.9075 | 0.9148 | 0.9111 | 0.9789 | 9.251% |
-| Engineered features removed | 0.9158 | 0.9079 | 0.9118 | 0.9794 | 8.415% |
-| SMOTE instead of class weights | 0.9124 | 0.9083 | 0.9103 | 0.9789 | 8.760% |
-| Authors' published train/test split | 0.9868 | 0.8073 | 0.8881 | 0.9885 | 1.317% |
+| Primary protocol (published partition) | 0.9604 | 0.6695 | 0.7890 | 0.9485 | 3.956% |
+| Pooled random split | 0.9022 | 0.9211 | 0.9116 | 0.9793 | 9.779% |
+| Duplicates retained | 0.9516 | 0.9732 | 0.9623 | 0.9959 | 4.843% |
+| TTL features removed | 0.9606 | 0.6567 | 0.7801 | 0.9441 | 3.941% |
+| Engineered features removed | 0.9625 | 0.6736 | 0.7925 | 0.9484 | 3.751% |
+| SMOTE instead of class weights | 0.9652 | 0.6633 | 0.7863 | 0.9486 | 3.477% |
+| Published partition, as distributed | 0.9799 | 0.8164 | 0.8907 | 0.9872 | 2.012% |
 
 These are the rows that decide how much the headline result means. See
 `figures/fig19_ablation_comparison.png` and the interpretation in
 `reports/Final_Project_Report.md` §12.
+
+---
+
+## 11b. Feature selection and dimensionality reduction
+
+A filter-based selection method and a dimensionality-reduction method, run as a
+**supplement** rather than as part of model selection. Both are fitted on the
+training split and scored on validation; the test split is not touched, so
+nothing here can retro-fit the headline result. The probe is a plain logistic
+regression - the question is how much signal survives each transformation, not
+how good the transformed model can be made.
+
+| Method | Features | F1 | ROC-AUC | PR-AUC |
+|---|---|---|---|---|
+| All features (baseline) | 73 | 0.9023 | 0.9663 | 0.9586 |
+| Mutual information, top 10 | 10 | 0.8898 | 0.8911 | 0.8403 |
+| Mutual information, top 20 | 20 | 0.8963 | 0.9359 | 0.9080 |
+| Mutual information, top 30 | 30 | 0.8975 | 0.9399 | 0.9148 |
+| Mutual information, top 40 | 40 | 0.8980 | 0.9551 | 0.9379 |
+| PCA (95% variance) | 16 | 0.8874 | 0.9447 | 0.9240 |
+
+**Feature selection.** The full encoded matrix has 73 columns and reaches PR-AUC 0.9586 under the linear probe. Ranking by mutual information and keeping the top 40 loses a measurable amount (0.9379, -0.0208). Mutual information is a *filter* method: it scores each feature against the target without reference to any estimator, which makes it an independent check on the SHAP ranking rather than a restatement of it.
+
+**Dimensionality reduction.** PCA needs 16 components to retain 95% of the variance - against 73 encoded columns - and scores PR-AUC 0.9240 (-0.0347 against the baseline). A substantial part of the encoded width is therefore redundant.
+
+**Neither is used in the deployed model.** PCA components are linear blends of the original fields, and an analyst cannot act on 'component 7 was high' the way they can act on 'no destination response and an unusual source TTL'. In a detection system whose output a human has to triage, that interpretability is worth more than the dimensionality saving - so the deployed pipeline keeps the named features and uses SHAP to explain them.
+
+Generated by `python -m src.feature_analysis`; raw values in
+`reports/metrics/feature_selection_pca.csv` and `.json`.
 
 ---
 
@@ -248,10 +278,10 @@ fair comparison between models with different score distributions, which is why
 selection used PR-AUC and the threshold was then tuned for the winner.
 
 **Which generates the fewest false alerts?** Section 3, FPR column. At
-XGBoost's operating threshold, 1,221 of 17,095
-benign test flows are alerted (7.142%). On a network
+LightGBM's operating threshold, 9,000 of 33,662
+benign test flows are alerted (26.736%). On a network
 carrying 10 million benign flows a day, that rate implies roughly
-714,240 false alerts per day - which is
+2,673,640 false alerts per day - which is
 why the FPR-constrained operating point exists.
 
 **What is missed?** Section 10. The miss rate is not uniform across families,
@@ -260,10 +290,10 @@ and the families with the worst recall are precisely the low-volume ones.
 **What is the trade-off?** Every threshold decrease converts false negatives
 into false positives at a rate the sweep in section 8 quantifies exactly.
 
-**What should be deployed, and why?** XGBoost, at threshold
-0.505, as a **triage-ranking layer feeding human analysts** - not as an
+**What should be deployed, and why?** LightGBM, at threshold
+0.465, as a **triage-ranking layer feeding human analysts** - not as an
 automated blocking control. The reasoning: it leads on PR-AUC, it is fast enough
-to keep up with a real link (195,353
+to keep up with a real link (82,396
 flows/s), and it supports per-alert SHAP explanations, which a blocking control
 in a regulated environment requires. The ablations in section 11 are the reason
 for the "triage, not blocking" qualifier.

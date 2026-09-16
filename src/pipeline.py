@@ -258,7 +258,11 @@ def run_ablations(experiments: list[str] | None = None) -> dict[str, pd.DataFram
         summary = pd.concat(
             {name: table for name, table in tables.items()}, names=["experiment", "model"])
         evaluate.save_table(summary, "ablation_summary")
-        evaluate.fig_ablation_comparison(tables)
+        # Chart the model that was actually deployed, not a hardcoded default -
+        # otherwise the figure and the reports describe different models.
+        deployment = _read_json(config.MODELS_DIR / "deployment.json")
+        model_key = (deployment or {}).get("model_key", "xgboost")
+        evaluate.fig_ablation_comparison(tables, model_key=model_key)
     return tables
 
 
@@ -267,11 +271,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--train", action="store_true", help="tune and fit the main models")
     parser.add_argument("--evaluate", action="store_true", help="evaluate the main experiment")
     parser.add_argument("--ablations", action="store_true", help="run every ablation")
+    parser.add_argument("--feature-analysis", action="store_true",
+                        help="feature selection and PCA supplement")
     parser.add_argument("--reports", action="store_true", help="regenerate the written reports")
     parser.add_argument("--all", action="store_true", help="everything, in order")
     args = parser.parse_args(argv)
 
-    if not any([args.train, args.evaluate, args.ablations, args.reports, args.all]):
+    stages = [args.train, args.evaluate, args.ablations, args.feature_analysis,
+              args.reports, args.all]
+    if not any(stages):
         parser.error("choose at least one stage, or --all")
 
     if args.train or args.all:
@@ -280,6 +288,11 @@ def main(argv: list[str] | None = None) -> int:
         run_experiment("main")
     if args.ablations or args.all:
         run_ablations()
+    if args.feature_analysis or args.all:
+        # After evaluation, deliberately: this is a supplement, and running it
+        # later makes it structurally impossible for it to influence selection.
+        from src import feature_analysis
+        feature_analysis.run()
     if args.reports or args.all:
         from src import report
         report.generate_all()

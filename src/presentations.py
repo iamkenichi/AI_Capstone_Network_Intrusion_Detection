@@ -76,11 +76,18 @@ def _ablation_findings(ablation: pd.DataFrame | None) -> tuple[str, str]:
     bullets: list[str] = []
     verdict = "artefact influence"
 
-    if "keep_duplicates" in ablation.index:
-        delta = ablation.loc["keep_duplicates", "f1"] - base["f1"]
+    if "pooled_random" in ablation.index:
+        delta = ablation.loc["pooled_random", "f1"] - base["f1"]
         bullets.append(
-            f"- **Duplicates retained → F1 {delta:+.4f}.** Skipping deduplication would have "
-            "handed back a better-looking number for no better model")
+            f"- **Pooled random split → F1 {delta:+.4f}.** The protocol most published results "
+            "use. We report the harder published partition instead")
+    if "keep_duplicates" in ablation.index and "pooled_random" in ablation.index:
+        # Paired with pooled_random, which it differs from only in deduplication.
+        delta = (ablation.loc["keep_duplicates", "f1"]
+                 - ablation.loc["pooled_random", "f1"])
+        bullets.append(
+            f"- **Duplicates retained → F1 {delta:+.4f}** (vs the pooled split)**.** Skipping "
+            "deduplication hands back a better-looking number for no better model")
     if "no_ttl" in ablation.index:
         delta = ablation.loc["no_ttl", "f1"] - base["f1"]
         if abs(delta) >= MATERIAL_F1:
@@ -90,10 +97,10 @@ def _ablation_findings(ablation: pd.DataFrame | None) -> tuple[str, str]:
             verdict = "measured dependence on the TTL capture artefact"
         else:
             bullets.append(
-                f"- **TTL removed → F1 {delta:+.4f}.** SHAP's top feature turns out to be "
-                "*redundant, not necessary* — the model re-routes through correlated features")
-            verdict = ("a capture artefact the model uses but does not need "
-                       "(shown by ablation, not assumed)")
+                f"- **TTL removed → F1 {delta:+.4f}.** SHAP's top feature is *used far more "
+                "than it is needed* — the model re-routes through correlated features")
+            verdict = ("a capture artefact the model leans on far more than it needs "
+                       "(measured by ablation, not assumed)")
     if "no_engineered" in ablation.index:
         delta = ablation.loc["no_engineered", "f1"] - base["f1"]
         bullets.append(
@@ -103,11 +110,11 @@ def _ablation_findings(ablation: pd.DataFrame | None) -> tuple[str, str]:
         delta = ablation.loc["smote", "f1"] - base["f1"]
         bullets.append(
             f"- **SMOTE → F1 {delta:+.4f}.** Tested rather than assumed, and not adopted")
-    if "official_split" in ablation.index:
-        row = ablation.loc["official_split"]
+    if "official_split_raw" in ablation.index:
+        delta = ablation.loc["official_split_raw", "f1"] - base["f1"]
         bullets.append(
-            f"- **Published split → precision {base['precision']:.3f} → {row['precision']:.3f}.** "
-            "Same model, different partition, different detector")
+            f"- **Partition as distributed → F1 {delta:+.4f}.** What the two cleaning steps "
+            "(dedup each side, remove train/test overlap) are worth")
     return ("\n".join(bullets) if bullets else fallback[0], verdict)
 
 
@@ -126,15 +133,23 @@ def _technical(ctx: dict) -> None:
 
     ablation_rows = ""
     if ablation is not None:
-        labels = {"main": "Primary protocol", "keep_duplicates": "Duplicates kept",
-                  "no_ttl": "TTL removed", "no_engineered": "No engineered features",
-                  "smote": "SMOTE", "official_split": "Published split"}
+        from src.train import ABLATION_LABELS as labels
         ablation_rows = "\n".join(
             f"| {labels.get(n, n)} | {ablation.loc[n, 'recall']:.4f} | "
             f"{ablation.loc[n, 'f1']:.4f} | {ablation.loc[n, 'pr_auc']:.4f} |"
             for n in ablation.index)
 
     ablation_findings, artefact_verdict = _ablation_findings(ablation)
+
+    # Computed, not asserted: the primary protocol is harder than the one these
+    # targets were registered against, so whether they still pass is a result.
+    targets = [("F1", row["f1"], 0.90), ("ROC-AUC", row["roc_auc"], 0.95),
+               ("PR-AUC", row["pr_auc"], 0.90), ("recall", row["recall"], 0.90)]
+    unmet = [name for name, value, bar in targets if value < bar]
+    target_verdict = (
+        "all pre-registered targets met" if not unmet else
+        f"{len(targets) - len(unmet)}/{len(targets)} pre-registered targets met on this "
+        f"harder protocol ({', '.join(unmet)} short); all met on the pooled random split")
 
     shap_top = ""
     if shap_payload and "global_importance" in shap_payload:
@@ -325,7 +340,7 @@ def _technical(ctx: dict) -> None:
 ## Slide 12 — Limitations & Conclusions
 
 **Content**
-- **Achieved:** F1 {row['f1']:.4f}, ROC-AUC {row['roc_auc']:.4f}, PR-AUC {row['pr_auc']:.4f}, recall {row['recall']:.2%}, FPR {row['false_positive_rate']:.3%} — all pre-registered targets met
+- **Achieved:** F1 {row['f1']:.4f}, ROC-AUC {row['roc_auc']:.4f}, PR-AUC {row['pr_auc']:.4f}, recall {row['recall']:.2%}, FPR {row['false_positive_rate']:.3%} — {target_verdict}
 - **Qualified by:** {artefact_verdict}, uneven per-family recall, and precision that will not transfer to a production base rate
 - **Cannot measure:** concept drift — timestamps were removed from the partitioned files
 - **Recommendation:** human-in-the-loop triage ranking, recalibrated on target-network traffic. Not autonomous blocking

@@ -288,3 +288,47 @@ def test_prepare_corpus_reports_known_defects() -> None:
     assert report["conflicting_feature_vectors"] >= 0
     assert set(report["class_balance"]) == {0, 1}
     assert sum(report["class_balance"].values()) == pytest.approx(1.0, abs=1e-3)
+
+
+# --------------------------------------------------------------------------- #
+# The primary protocol
+# --------------------------------------------------------------------------- #
+@requires_data
+def test_published_split_partitions_are_pairwise_disjoint() -> None:
+    """No feature vector may appear in more than one split.
+
+    This is the property the whole headline result rests on. Deduplicating each
+    partition independently does NOT give it for free - a record present in both
+    the published train and test files survives both passes - which is why the
+    overlap-removal step exists and why it is tested rather than assumed.
+    """
+    train, val, test, manifest = preprocessing.split_published(verbose=False)
+    predictors = [c for c in train.columns
+                  if c not in (*config.LEAKAGE_COLUMNS, "partition")]
+
+    def signatures(frame: pd.DataFrame) -> set:
+        return set(map(tuple, frame[predictors].itertuples(index=False, name=None)))
+
+    train_sig, val_sig, test_sig = signatures(train), signatures(val), signatures(test)
+    assert not train_sig & val_sig, "training vectors leaked into validation"
+    assert not train_sig & test_sig, "training vectors leaked into the test split"
+    assert not val_sig & test_sig, "validation vectors leaked into the test split"
+
+    for name, frame in (("train", train), ("val", val), ("test", test)):
+        assert not frame.duplicated(subset=predictors).any(), f"{name} still self-duplicates"
+
+    assert manifest["test_overlap_removed"] > 0, (
+        "the published files are known to share records; removing none means the "
+        "overlap check silently stopped working")
+
+
+@requires_data
+def test_published_split_keeps_every_attack_family_in_every_partition() -> None:
+    """Stratifying on attack_cat exists so rare families survive the split."""
+    train, val, test, _ = preprocessing.split_published(verbose=False)
+
+    families = set(train[config.ATTACK_CAT].unique())
+    assert len(families) == 10, f"expected 10 attack families, found {len(families)}"
+    for name, frame in (("validation", val), ("test", test)):
+        missing = families - set(frame[config.ATTACK_CAT].unique())
+        assert not missing, f"{name} split is missing {sorted(missing)}"

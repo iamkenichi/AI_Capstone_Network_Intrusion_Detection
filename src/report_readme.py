@@ -73,12 +73,7 @@ def generate() -> None:
     ablation_rows = ""
     if ablations is not None and ready and best in ablations.index.get_level_values(1):
         sub = ablations.xs(best, level=1)
-        labels = {"main": "Primary protocol (headline)",
-                  "keep_duplicates": "Duplicates retained",
-                  "no_ttl": "TTL features removed",
-                  "no_engineered": "Engineered features removed",
-                  "smote": "SMOTE instead of class weights",
-                  "official_split": "Authors' published split"}
+        from src.train import ABLATION_LABELS as labels
         ablation_rows = "\n".join(
             f"| {labels.get(n, n)} | {sub.loc[n, 'recall']:.4f} | {sub.loc[n, 'f1']:.4f} | "
             f"{sub.loc[n, 'pr_auc']:.4f} |" for n in sub.index)
@@ -93,6 +88,7 @@ def generate() -> None:
 > Flow-level intrusion detection on UNSW-NB15 — built to be reproducible,
 > explainable, and honest about what it actually measures.
 
+[![tests](https://github.com/iamkenichi/AI_Capstone_Network_Intrusion_Detection/actions/workflows/tests.yml/badge.svg)](https://github.com/iamkenichi/AI_Capstone_Network_Intrusion_Detection/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-blue)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.4%2B-orange)
 ![XGBoost](https://img.shields.io/badge/XGBoost-2.0%2B-green)
@@ -479,9 +475,13 @@ AI_Capstone_Network_Intrusion_Detection/
 │   ├── eda.py                   ← all EDA figures
 │   ├── document.py              ← dataset documentation + data dictionary
 │   ├── plotting.py              ← shared figure styling
+│   ├── feature_analysis.py      ← mutual-information filter + PCA supplement
 │   ├── make_notebooks.py        ← generates and executes the six notebooks
 │   ├── deliverables.py          ← .docx / .pptx submission bundle
 │   └── report*.py               ← generated reports and decks
+│
+├── scripts/
+│   └── verify_project.py        ← independent artefact verification
 │
 ├── models/                      ← fitted pipelines + deployment.json
 ├── figures/                     ← all publication-quality figures
@@ -510,8 +510,9 @@ AI_Capstone_Network_Intrusion_Detection/
 │
 └── tests/
     ├── conftest.py
-    ├── test_preprocessing.py    ← leakage controls
+    ├── test_preprocessing.py    ← leakage controls, split disjointness
     ├── test_features.py         ← numerical safety, row-wise independence
+    ├── test_evaluate.py         ← Wilson intervals against the score test
     └── test_prediction.py       ← inference API
 ```
 
@@ -593,12 +594,14 @@ AI-assistance disclosure:
 |---|---|
 | Global seed | `random_state = {config.RANDOM_STATE}` in `src/config.py`, used everywhere |
 | Dataset integrity | Row counts, schema, target encoding and SHA-256 verified on load |
-| Environment | `requirements.txt`, `environment.yml`, `reports/environment_versions.txt` |
+| Environment | `requirements.txt` (ranges), `requirements-lock.txt` (exact versions used here), `environment.yml` |
 | Paths | All derived from the repo root via `pathlib` — no absolute paths anywhere |
-| Split protocol | Stratified 60/20/20 on `attack_cat`, materialised to `data/processed/` |
-| Leakage prevention | Single enforcement point (`split_xy`); verified by tests |
+| Split protocol | The authors' published partition: each side deduplicated, validation carved from the training file (stratified on `attack_cat`), test records overlapping development removed |
+| Leakage prevention | Single enforcement point (`split_xy`); split disjointness asserted by tests and re-checked by `scripts/verify_project.py` |
 | Results provenance | Every number written to `reports/metrics/`; reports generated from it |
 | Tuning record | `models/best_params_main.json` + `models/manifest_main.json` |
+| Independent check | `scripts/verify_project.py` recomputes the headline metrics from the saved model and verifies figures, notebooks, decks and links |
+| Continuous integration | `.github/workflows/tests.yml` runs the suite and the verifier on Python 3.11 and 3.13 |
 
 Full reproduction from a clean checkout:
 
@@ -607,6 +610,7 @@ pip install -r requirements.txt
 python -m src.data_loader
 python -m src.pipeline --all
 pytest -q
+python scripts/verify_project.py
 ```
 
 Deleting `reports/*.md` and re-running `python -m src.report` regenerates every

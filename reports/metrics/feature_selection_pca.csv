@@ -1,0 +1,7 @@
+method,n_features,f1,roc_auc,pr_auc
+All features (baseline),73,0.902347,0.966255,0.958637
+"Mutual information, top 10",10,0.889827,0.891052,0.840312
+"Mutual information, top 20",20,0.896268,0.935858,0.90798
+"Mutual information, top 30",30,0.897533,0.93989,0.914815
+"Mutual information, top 40",40,0.897969,0.955075,0.937885
+PCA (95% variance),16,0.887369,0.944715,0.923985

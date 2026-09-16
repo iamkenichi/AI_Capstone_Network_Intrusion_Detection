@@ -1,0 +1,152 @@
+{
+  "generated": "2026-09-16",
+  "protocol": "published_partition",
+  "fitted_on": "training split only",
+  "scored_on": "validation split",
+  "test_split_touched": false,
+  "random_state": 42,
+  "probe_estimator": "LogisticRegression(class_weight='balanced')",
+  "n_features_after_encoding": 73,
+  "mutual_information_ranking": [
+    {
+      "rank": 1,
+      "feature": "load_log_ratio",
+      "mutual_information": 0.457412
+    },
+    {
+      "rank": 2,
+      "feature": "flow_bytes_total",
+      "mutual_information": 0.455857
+    },
+    {
+      "rank": 3,
+      "feature": "bytes_per_packet",
+      "mutual_information": 0.451485
+    },
+    {
+      "rank": 4,
+      "feature": "sbytes",
+      "mutual_information": 0.450905
+    },
+    {
+      "rank": 5,
+      "feature": "src_byte_ratio",
+      "mutual_information": 0.431403
+    },
+    {
+      "rank": 6,
+      "feature": "dbytes",
+      "mutual_information": 0.414157
+    },
+    {
+      "rank": 7,
+      "feature": "sttl",
+      "mutual_information": 0.400265
+    },
+    {
+      "rank": 8,
+      "feature": "dttl",
+      "mutual_information": 0.390852
+    },
+    {
+      "rank": 9,
+      "feature": "ct_state_ttl",
+      "mutual_information": 0.389207
+    },
+    {
+      "rank": 10,
+      "feature": "src_pkt_ratio",
+      "mutual_information": 0.350262
+    },
+    {
+      "rank": 11,
+      "feature": "dmean",
+      "mutual_information": 0.32491
+    },
+    {
+      "rank": 12,
+      "feature": "tcprtt",
+      "mutual_information": 0.304507
+    },
+    {
+      "rank": 13,
+      "feature": "rate",
+      "mutual_information": 0.301198
+    },
+    {
+      "rank": 14,
+      "feature": "synack",
+      "mutual_information": 0.300327
+    },
+    {
+      "rank": 15,
+      "feature": "ackdat",
+      "mutual_information": 0.29926
+    },
+    {
+      "rank": 16,
+      "feature": "dinpkt",
+      "mutual_information": 0.294652
+    },
+    {
+      "rank": 17,
+      "feature": "smean",
+      "mutual_information": 0.287601
+    },
+    {
+      "rank": 18,
+      "feature": "dur",
+      "mutual_information": 0.271366
+    },
+    {
+      "rank": 19,
+      "feature": "flow_pkts_total",
+      "mutual_information": 0.270935
+    },
+    {
+      "rank": 20,
+      "feature": "dpkts",
+      "mutual_information": 0.263383
+    }
+  ],
+  "selected_top_20": [
+    "ackdat",
+    "bytes_per_packet",
+    "ct_state_ttl",
+    "dbytes",
+    "dinpkt",
+    "dmean",
+    "dpkts",
+    "dttl",
+    "dur",
+    "flow_bytes_total",
+    "flow_pkts_total",
+    "load_log_ratio",
+    "rate",
+    "sbytes",
+    "smean",
+    "src_byte_ratio",
+    "src_pkt_ratio",
+    "sttl",
+    "synack",
+    "tcprtt"
+  ],
+  "pca": {
+    "variance_target": 0.95,
+    "components_retained": 16,
+    "components_for_50pct": 2,
+    "first_component_variance": 0.386074,
+    "cumulative_variance_first_10": [
+      0.386074,
+      0.545412,
+      0.635726,
+      0.704748,
+      0.757094,
+      0.798556,
+      0.82752,
+      0.85434,
+      0.87711,
+      0.892973
+    ]
+  }
+}

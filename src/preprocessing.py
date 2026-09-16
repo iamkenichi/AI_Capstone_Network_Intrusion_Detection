@@ -30,6 +30,8 @@ as a side effect.
 
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
@@ -230,7 +232,7 @@ def split_official(
     """
     Reproduce the dataset authors' published train/test partition instead.
 
-    Used only by the ``official_split`` robustness check. The published test file
+    Used only by the ``official_split_raw`` robustness check. The published test file
     is held out untouched; a validation set is carved out of the published
     training file so threshold selection still never sees the test data.
     """
@@ -247,6 +249,97 @@ def split_official(
         print(f"[preprocessing] official protocol -> train={len(train):,} "
               f"val={len(val):,} test={len(test):,}")
     return train.reset_index(drop=True), val.reset_index(drop=True), test
+
+
+def split_published(
+    verbose: bool = True,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict[str, object]]:
+    """
+    The primary protocol: the authors' published partition, leak-proofed.
+
+    This is deliberately the harder and more externally valid evaluation, and it
+    is what the headline numbers are measured on. Three things happen, in order:
+
+    1. **Deduplicate each partition independently.** The published train and test
+       files each repeat feature vectors internally. Collapsing them separately
+       removes that inflation without dissolving the partition boundary.
+    2. **Carve a validation set out of the published training file** (80/20,
+       stratified on ``attack_cat``). Model selection and threshold tuning see
+       only this; the published test file is never touched by either.
+    3. **Remove from the test set any feature vector that also occurs in train
+       or validation.** Deduplicating within a partition does not catch a record
+       that appears in both, and such a row is memorised, not predicted.
+
+    Contrast with :func:`split_corpus`, which pools both files and draws a random
+    split. A random split guarantees train and test share a distribution; the
+    published partition does not, which is why performance drops on it. That drop
+    is information, not a defect, so this protocol is the primary one and the
+    pooled random split is carried as the ``pooled_random`` ablation.
+
+    Returns ``(train, val, test, manifest)``.
+    """
+    corpus = data_loader.load_corpus()
+    predictors = [c for c in corpus.columns
+                  if c not in (*config.LEAKAGE_COLUMNS, "partition")]
+
+    published_train = corpus[corpus["partition"] == "official_train"]
+    published_test = corpus[corpus["partition"] == "official_test"]
+    manifest: dict[str, object] = {
+        "protocol": "published_partition",
+        "published_train_rows": int(len(published_train)),
+        "published_test_rows": int(len(published_test)),
+    }
+
+    def dedupe(frame: pd.DataFrame, tag: str) -> pd.DataFrame:
+        conflicting = frame.groupby(predictors, dropna=False, observed=True)[
+            config.TARGET].nunique()
+        manifest[f"{tag}_conflicting_signatures"] = int((conflicting > 1).sum())
+        mask = frame.duplicated(subset=predictors, keep="first")
+        manifest[f"{tag}_duplicates_removed"] = int(mask.sum())
+        return frame.loc[~mask].reset_index(drop=True)
+
+    development = dedupe(published_train, "development")
+    test = dedupe(published_test, "test")
+
+    train, val = train_test_split(
+        development,
+        test_size=config.VAL_SIZE,
+        stratify=development[config.STRATIFY_COLUMN],
+        random_state=config.RANDOM_STATE,
+        shuffle=True,
+    )
+    train = train.reset_index(drop=True)
+    val = val.reset_index(drop=True)
+
+    # Step 3: drop test rows whose feature vector was seen during development.
+    seen = set(map(tuple, development[predictors].itertuples(index=False, name=None)))
+    overlap = np.fromiter(
+        (row in seen for row in test[predictors].itertuples(index=False, name=None)),
+        dtype=bool, count=len(test))
+    manifest["test_overlap_removed"] = int(overlap.sum())
+    test = test.loc[~overlap].reset_index(drop=True)
+
+    manifest.update({
+        "train_rows": int(len(train)),
+        "validation_rows": int(len(val)),
+        "test_rows": int(len(test)),
+        "train_attack_rate": round(float(train[config.TARGET].mean()), 4),
+        "validation_attack_rate": round(float(val[config.TARGET].mean()), 4),
+        "test_attack_rate": round(float(test[config.TARGET].mean()), 4),
+        "random_state": config.RANDOM_STATE,
+    })
+
+    if verbose:
+        print(f"[preprocessing] published protocol: "
+              f"train {len(train):,} / val {len(val):,} / test {len(test):,}")
+        print(f"[preprocessing]   duplicates removed - development "
+              f"{manifest['development_duplicates_removed']:,}, test "
+              f"{manifest['test_duplicates_removed']:,}")
+        print(f"[preprocessing]   train/test overlap removed: "
+              f"{manifest['test_overlap_removed']:,}")
+        print(f"[preprocessing]   attack rate - train {manifest['train_attack_rate']:.4f}, "
+              f"test {manifest['test_attack_rate']:.4f}")
+    return train, val, test, manifest
 
 
 def split_xy(
@@ -378,14 +471,21 @@ def transformed_feature_names(fitted_pipeline: Pipeline) -> list[str]:
 # --------------------------------------------------------------------------- #
 def main() -> int:
     config.ensure_dirs()
-    corpus, report = prepare_corpus(verbose=True)
-    train, val, test = split_corpus(corpus, verbose=True)
+    # The PRIMARY protocol, so the materialised parquet files match the models
+    # in models/ rather than a different partition of the same data.
+    train, val, test, manifest = split_published(verbose=True)
 
     for name, part in (("train", train), ("val", val), ("test", test)):
         path = config.PROCESSED_DIR / f"{name}.parquet"
         part.to_parquet(path, index=False)
         print(f"[preprocessing] wrote {path.relative_to(config.PROJECT_ROOT)} "
               f"({len(part):,} rows)")
+
+    # Committed provenance: what the split did, in numbers, without needing the
+    # 62 MB of raw data to inspect it.
+    manifest_path = config.METRICS_DIR / "split_manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    print(f"[preprocessing] wrote reports/metrics/{manifest_path.name}")
 
     pipeline = build_feature_pipeline()
     X_train, _ = split_xy(train)

@@ -15,21 +15,21 @@ payloads, no IP addresses, no port numbers, no timestamps.
 
 Four supervised models (Logistic Regression, Random Forest, XGBoost, LightGBM)
 and one unsupervised detector (Isolation Forest) were trained on the UNSW-NB15
-dataset. **XGBoost** was selected on validation PR-AUC and evaluated once on a
-held-out test split of 30,737 flows.
+dataset. **LightGBM** was selected on validation PR-AUC and evaluated once on a
+held-out test split of 52,644 flows.
 
-**Headline results** at the tuned operating threshold of 0.505:
+**Headline results** at the tuned operating threshold of 0.465:
 
 | Metric | Value |
 |---|---|
-| Attack recall | **91.12%** |
-| Precision | 91.06% |
-| F1 | **0.9109** |
-| ROC-AUC | 0.9824 |
-| PR-AUC | 0.9791 |
-| False-negative rate | **8.88%** (1,212 attacks missed) |
-| False-positive rate | **7.142%** (1,221 false alerts) |
-| Throughput | 195,353 flows/second |
+| Attack recall | **96.04%** |
+| Precision | 66.95% |
+| F1 | **0.7890** |
+| ROC-AUC | 0.9648 |
+| PR-AUC | 0.9485 |
+| False-negative rate | **3.96%** (751 attacks missed) |
+| False-positive rate | **26.736%** (9,000 false alerts) |
+| Throughput | 82,396 flows/second |
 
 **Three findings matter more than the headline numbers:**
 
@@ -39,7 +39,7 @@ held-out test split of 30,737 flows.
    memorised. This project deduplicates before splitting and quantifies the
    difference.
 2. **A large share of the model's decision impact comes from a capture
-   artefact.** SHAP attributes 54% of total impact to the TTL feature family.
+   artefact.** SHAP attributes 53% of total impact to the TTL feature family.
    The UNSW-NB15 testbed ran benign and attack generators on hosts with
    different initial TTL values, so `sttl` partly encodes *which generator*
    produced a flow. A dedicated ablation measures performance without it.
@@ -100,11 +100,12 @@ a stated 20:1 cost assumption with published sensitivity to that assumption.
 > benign network traffic while maintaining an operationally acceptable
 > false-negative and false-positive rate?
 
-**Answer, on this data:** yes for the aggregate metrics - the pre-registered F1,
-ROC-AUC and recall targets are met (section 12). But with three material
-qualifications: performance is uneven across attack families, a substantial
-share of the signal is artefactual, and the precision figure will not transfer
-to a production base rate.
+**Answer, on this data:** partially. 3 of 4 pre-registered targets are met on the primary protocol; 1 is not - F1 >= 0.90 (achieved 0.7890). Those targets were registered before the primary protocol was tightened to the published partition. They are reported here unchanged rather than rebased onto the easier pooled random split, which does still meet them (section 12.4) (section 12.2).
+
+Three qualifications apply to that answer whichever way it lands: performance is
+uneven across attack families, a substantial share of the attributed signal is
+artefactual, and the precision figure will not transfer to a production base
+rate.
 
 ---
 
@@ -215,65 +216,68 @@ scoring F1 with PR-AUC and ROC-AUC recorded alongside. Each model is a full
 
 ## 12. Model Results
 
-### 12.1 Comparison (test split, n=30,737)
+### 12.1 Comparison (test split, n=52,644)
 
 | Model | Accuracy | Precision | Recall | F1 | ROC-AUC | PR-AUC | FPR | FNR | Train | Throughput |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Logistic Regression | 0.8669 | 0.8106 | 0.9134 | 0.8590 | 0.9556 | 0.9415 | 17.028% | 8.657% | 10.0s | 193,909/s |
-| Random Forest | 0.9172 | 0.9010 | 0.9137 | 0.9073 | 0.9811 | 0.9773 | 8.008% | 8.628% | 16.6s | 131,445/s |
-| XGBoost | 0.9208 | 0.9106 | 0.9112 | 0.9109 | 0.9824 | 0.9791 | 7.142% | 8.884% | 4.8s | 195,353/s |
-| LightGBM | 0.9209 | 0.9089 | 0.9134 | 0.9112 | 0.9825 | 0.9791 | 7.306% | 8.657% | 5.1s | 107,835/s |
-| Isolation Forest | 0.6061 | 0.6719 | 0.2199 | 0.3314 | 0.6707 | 0.5912 | 8.570% | 78.009% | 1.0s | 65,303/s |
+| Logistic Regression | 0.7442 | 0.5901 | 0.9517 | 0.7285 | 0.9193 | 0.8789 | 37.273% | 4.831% | 6.9s | 280,200/s |
+| Random Forest | 0.8244 | 0.6784 | 0.9752 | 0.8002 | 0.9669 | 0.9493 | 26.068% | 2.481% | 16.6s | 83,001/s |
+| XGBoost | 0.8231 | 0.6800 | 0.9622 | 0.7968 | 0.9673 | 0.9526 | 25.536% | 3.777% | 4.7s | 141,012/s |
+| LightGBM | 0.8148 | 0.6695 | 0.9604 | 0.7890 | 0.9648 | 0.9485 | 26.736% | 3.956% | 8.0s | 82,396/s |
+| Isolation Forest | 0.6469 | 0.5164 | 0.3265 | 0.4001 | 0.6795 | 0.5047 | 17.242% | 67.348% | 1.0s | 58,669/s |
 
 ### 12.2 Pre-registered targets
 
 | Target | Achieved | Status |
 |---|---|---|
-| F1 >= 0.90 | 0.9109 | MET |
-| ROC-AUC >= 0.95 | 0.9824 | MET |
-| PR-AUC >= 0.90 | 0.9791 | MET |
-| Attack recall >= 0.90 | 0.9112 | MET |
+| F1 >= 0.90 | 0.7890 | NOT MET |
+| ROC-AUC >= 0.95 | 0.9648 | MET |
+| PR-AUC >= 0.90 | 0.9485 | MET |
+| Attack recall >= 0.90 | 0.9604 | MET |
 
 ### 12.3 Operating points
 
 | Operating point | Threshold | Recall | Precision | FPR | Missed | False alerts |
 |---|---|---|---|---|---|---|
-| adopted f1 optimal | 0.505 | 0.9112 | 0.9106 | 7.142% | 1,212 | 1,221 |
-| fpr constrained | 0.870 | 0.7698 | 0.9868 | 0.819% | 3,141 | 140 |
-| default 0.50 | 0.500 | 0.9135 | 0.9087 | 7.324% | 1,180 | 1,252 |
+| adopted f1 optimal | 0.465 | 0.9604 | 0.6695 | 26.736% | 751 | 9,000 |
+| fpr constrained | 0.970 | 0.8336 | 0.8895 | 5.840% | 3,158 | 1,966 |
+| default 0.50 | 0.500 | 0.9565 | 0.6779 | 25.622% | 826 | 8,625 |
 
 ### 12.4 Ablations - what is the headline actually measuring?
 
 | Experiment | Recall | Precision | F1 | PR-AUC |
 |---|---|---|---|---|
-| Primary protocol (headline) | 0.9112 | 0.9106 | 0.9109 | 0.9791 |
-| Duplicates retained | 0.9630 | 0.9583 | 0.9607 | 0.9957 |
-| TTL features removed | 0.9075 | 0.9148 | 0.9111 | 0.9789 |
-| Engineered features removed | 0.9158 | 0.9079 | 0.9118 | 0.9794 |
-| SMOTE instead of class weights | 0.9124 | 0.9083 | 0.9103 | 0.9789 |
-| Authors' published split | 0.9868 | 0.8073 | 0.8881 | 0.9885 |
+| Primary protocol (published partition) | 0.9604 | 0.6695 | 0.7890 | 0.9485 |
+| Pooled random split | 0.9022 | 0.9211 | 0.9116 | 0.9793 |
+| Duplicates retained | 0.9516 | 0.9732 | 0.9623 | 0.9959 |
+| TTL features removed | 0.9606 | 0.6567 | 0.7801 | 0.9441 |
+| Engineered features removed | 0.9625 | 0.6736 | 0.7925 | 0.9484 |
+| SMOTE instead of class weights | 0.9652 | 0.6633 | 0.7863 | 0.9486 |
+| Published partition, as distributed | 0.9799 | 0.8164 | 0.8907 | 0.9872 |
 
 This table is the most important in the report. It separates "the model detects
 attacks" from "the model detects this dataset."
 
-**Duplicates retained (+0.0498 F1, +0.0166 PR-AUC).** Skipping deduplication would have produced a headline F1 of 0.9607 instead of 0.9109, and a PR-AUC of 0.9957. Nothing about the model improved; the test split simply contained records the model had already memorised from training. This is the single largest effect in the table, and it is a *procedural* effect, not a modelling one - which is why deduplication happens before splitting in this project and why published UNSW-NB15 results that omit it are not comparable to these numbers.
+**Pooled random split (+0.1226 F1, FPR 26.7% to 6.2%).** This is the protocol most published UNSW-NB15 results use: pool the two files, deduplicate, then split at random. It reports F1 0.9116 against the primary protocol's 0.7890. The model is identical; what changes is that a random split *guarantees* the test set is drawn from the training distribution, and the authors' partition does not. The primary protocol is the harder one, and it is the one the headline figures are measured on precisely because the gap between these two rows is the part of a benchmark score that does not survive contact with a new network.
 
-**TTL features removed (+0.0003 F1, -0.0037 recall).** This is the most counter-intuitive result in the project. SHAP attributes the largest single share of decision impact to `sttl`, which invites the conclusion that the model is riding the capture artefact - yet deleting all three TTL columns and retraining changes F1 by +0.0003. Attribution describes what the fitted model *used*; it does not establish what was *necessary*. The artefact is a **redundant shortcut rather than a crutch**: the boosted tree re-routes through correlated features at no measurable cost. Two conclusions follow - the headline number does not depend on the artefact, and 'SHAP flagged it, so remove it' would have been remediation theatre, changing the explanation while leaving the behaviour intact.
+**Duplicates retained (+0.0507 F1 against the pooled random split, +0.1733 against the primary protocol).** This row is paired with the previous one rather than with the headline: the two share the random-split protocol and differ only in whether duplicates were removed, so the gap between them - 0.9623 against 0.9116 - is duplicate leakage measured on its own. Nothing about the model improved; the test split simply contained records it had already memorised. Stacked on top of the protocol effect, the two together account for +0.1733 F1 - more than any modelling decision in this project.
 
-**Engineered features removed (+0.0010 F1).** The 15 domain features made no measurable difference to performance. Reported plainly because the negative result is the honest one: they were justified on security grounds and they earn their place in the SHAP narrative and the analyst-facing explanation, but on this corpus the raw features already contain the same information. They buy interpretability, not accuracy.
+**TTL features removed (-0.0089 F1, +0.0002 recall).** This is the most counter-intuitive result in the project. SHAP attributes the largest single share of decision impact to `sttl`, which invites the conclusion that the model is riding the capture artefact - yet deleting all three TTL columns and retraining costs only 0.0089 F1. The gap between how much the model *uses* those columns and how little it *needs* them is the finding. Attribution describes what a fitted model relied on; it does not establish what was necessary, because the remaining features carry near-equivalent information and the boosted tree simply re-routes through them. Two consequences follow. The headline number is not an artefact score - it very largely survives the artefact's removal. And 'SHAP flagged it, so remove it' would have been remediation theatre: a model that looks cleaner and behaves almost identically.
 
-**SMOTE instead of class weights (-0.0005 F1, +0.0012 recall).** Synthetic oversampling was tested rather than assumed, applied to the training folds only. At a 44% positive rate there is no minority class to rescue, and the result confirms it: SMOTE is not used in the final pipeline because it costs compute and adds a synthetic-data assumption without buying anything measurable.
+**Engineered features removed (+0.0035 F1).** The 15 domain features made no measurable difference to performance. Reported plainly because the negative result is the honest one: they were justified on security grounds and they earn their place in the SHAP narrative and the analyst-facing explanation, but on this corpus the raw features already contain the same information. They buy interpretability, not accuracy.
 
-**Authors' published split (-0.0228 F1, precision 0.9106 to 0.8073, FPR 7.1% to 28.9%).** The same code, the same hyper-parameters, a different partition - and the detector changes character, trading precision for recall (0.9868). The published partition is not a random draw from the same distribution as the corpus, so this row is the closest thing available here to an out-of-distribution test. It is the empirical basis for the claim that these numbers describe performance *on this corpus* and would need recalibration on any real network.
+**SMOTE instead of class weights (-0.0027 F1, +0.0048 recall).** Synthetic oversampling was tested rather than assumed, applied to the training folds only. At a 44% positive rate there is no minority class to rescue, and the result confirms it: SMOTE is not used in the final pipeline because it costs compute and adds a synthetic-data assumption without buying anything measurable.
+
+**Published partition, as distributed (+0.1017 F1).** The same partition as the primary protocol, but with neither cleaning step applied: duplicate records left in each side, and records occurring in both train and test left in both. It reports F1 0.8907 and recall 0.9799. The difference against the primary row is the combined value of deduplicating each partition and removing the train/test overlap - two steps that cost nothing to apply and that a benchmark number quietly inherits if they are skipped.
 
 ---
 
 ## 13. Model Comparison and Selection
 
-**Selected: XGBoost.** Highest validation PR-AUC (0.9784), +0.0002 ahead of LightGBM (0.9783). Validation recall 0.9194, FPR 0.0742, throughput 195,353 flows/s.
+**Selected: LightGBM.** Highest validation PR-AUC (0.9858), +0.0003 ahead of XGBoost (0.9855). Validation recall 0.9510, FPR 0.0762, throughput 82,396 flows/s.
 
 Selection used **PR-AUC, not accuracy**. Accuracy on a
-44%-positive corpus compresses every model into a
+36%-positive corpus compresses every model into a
 narrow band and rewards majority-class performance; PR-AUC measures ranking
 quality on the positive class, which is what survives a change of base rate.
 
@@ -286,33 +290,33 @@ what supervised labelling buys.
 
 ## 14. Explainability
 
-Global SHAP importance for XGBoost:
+Global SHAP importance for LightGBM:
 
 | # | Feature | Mean \|SHAP\| | Share of impact | Average direction |
 |---|---|---|---|---|
-| 1 | `sttl` | 4.6889 | 48.0% | toward BENIGN |
-| 2 | `ct_dst_src_ltm` | 0.6891 | 7.1% | toward ATTACK |
-| 3 | `ct_state_ttl` | 0.5415 | 5.5% | toward BENIGN |
-| 4 | `dbytes` | 0.4650 | 4.8% | toward ATTACK |
-| 5 | `service_dns` | 0.3177 | 3.3% | toward ATTACK |
-| 6 | `sbytes` | 0.2302 | 2.4% | toward ATTACK |
-| 7 | `dmean` | 0.1772 | 1.8% | toward ATTACK |
-| 8 | `smean` | 0.1606 | 1.6% | toward ATTACK |
-| 9 | `bytes_per_packet` | 0.1486 | 1.5% | toward ATTACK |
-| 10 | `ct_srv_src` | 0.1481 | 1.5% | toward ATTACK |
-| 11 | `ct_srv_dst` | 0.1461 | 1.5% | toward ATTACK |
-| 12 | `load_log_ratio` | 0.1341 | 1.4% | toward ATTACK |
+| 1 | `sttl` | 5.7510 | 38.3% | toward ATTACK |
+| 2 | `ct_state_ttl` | 1.7088 | 11.4% | toward BENIGN |
+| 3 | `ct_srv_dst` | 0.7684 | 5.1% | toward BENIGN |
+| 4 | `ct_dst_src_ltm` | 0.6490 | 4.3% | toward ATTACK |
+| 5 | `dttl` | 0.5367 | 3.6% | toward ATTACK |
+| 6 | `ct_srv_src` | 0.4217 | 2.8% | toward BENIGN |
+| 7 | `service_dns` | 0.3776 | 2.5% | toward ATTACK |
+| 8 | `dmean` | 0.3359 | 2.2% | toward BENIGN |
+| 9 | `dbytes` | 0.3042 | 2.0% | toward ATTACK |
+| 10 | `ct_dst_sport_ltm` | 0.2712 | 1.8% | toward ATTACK |
+| 11 | `dload` | 0.2599 | 1.7% | toward ATTACK |
+| 12 | `smean` | 0.2203 | 1.5% | toward BENIGN |
 
 ### Where the decisions come from
 
 | Feature group | Share of total attributed impact |
 |---|---|
-| TTL family (sttl, dttl, ct_state_ttl) | 54.3% |
-| Volume & rate (bytes, packets, load) | 16.1% |
-| Connection counters (ct_*, excl. ct_state_ttl) | 12.2% |
-| Engineered in this project | 7.5% |
-| Timing & TCP state | 6.1% |
-| Categorical (proto, service, state) | 5.8% |
+| TTL family (sttl, dttl, ct_state_ttl) | 53.2% |
+| Connection counters (ct_*, excl. ct_state_ttl) | 16.5% |
+| Volume & rate (bytes, packets, load) | 12.5% |
+| Timing & TCP state | 7.2% |
+| Engineered in this project | 6.5% |
+| Categorical (proto, service, state) | 4.9% |
 
 **What makes traffic look malicious to this model:** high source-to-destination
 TTL, an unanswered connection (no destination packets, no completed handshake),
@@ -341,19 +345,19 @@ behaviour rather than a cherry-picked extreme.
 
 | Family | Attack flows (test) | Recall | FNR |
 |---|---|---|---|
-| Analysis | 167 | 0.5928 | 0.4072 |
-| Fuzzers | 3,845 | 0.7376 | 0.2624 |
-| Shellcode | 291 | 0.9622 | 0.0378 |
-| Exploits | 5,161 | 0.9802 | 0.0198 |
-| DoS | 838 | 0.9881 | 0.0119 |
-| Reconnaissance | 1,729 | 0.9960 | 0.0040 |
-| Generic | 1,461 | 0.9966 | 0.0034 |
-| Backdoor | 117 | 1.0000 | 0.0000 |
-| Worms | 33 | 1.0000 | 0.0000 |
+| Fuzzers | 4,335 | 0.8415 | 0.1585 |
+| Analysis | 294 | 0.9728 | 0.0272 |
+| Shellcode | 364 | 0.9918 | 0.0082 |
+| Exploits | 7,085 | 0.9934 | 0.0066 |
+| DoS | 1,186 | 0.9975 | 0.0025 |
+| Reconnaissance | 2,224 | 0.9987 | 0.0013 |
+| Generic | 3,381 | 1.0000 | 0.0000 |
+| Backdoor | 70 | 1.0000 | 0.0000 |
+| Worms | 43 | 1.0000 | 0.0000 |
 
-The missed attacks are **near-misses, not confident errors**. Their median score is 0.3463 against a decision threshold of 0.505 - a gap of only 0.159 - and just 1.6% of them score below 0.10. Operationally that is the *better* of the two possible failure modes: it means the threshold is the dominant lever, that lowering it would recover a substantial share of these attacks (at a cost the Phase 10 sweep quantifies exactly), and that a 'review the borderline alerts' workflow would genuinely catch them rather than looking past them.
+The missed attacks are scored with **high confidence**: median 0.2680 against a 0.465 threshold, with 16.5% below 0.10. That is the worse failure mode - a borderline-review workflow cannot catch an error that never approaches the border, and lowering the threshold would recover few of them while adding many false alerts.
 
-The false alerts behave the same way: median score 0.6326, with only 8.4% above 0.90. Both error types concentrate near the decision boundary, which is exactly the regime in which the choice of operating threshold - rather than the choice of model - determines what a SOC experiences.
+The false alerts behave the same way: median score 0.8514, with only 40.9% above 0.90. Both error types concentrate near the decision boundary, which is exactly the regime in which the choice of operating threshold - rather than the choice of model - determines what a SOC experiences.
 
 ---
 
@@ -419,7 +423,7 @@ risk-banded triage queue → analyst → response. The model ranks; humans decid
 | Adversarial testing against SHAP-identified features | The opponent adapts |
 | Defence in depth | One layer among signatures, EDR, authentication and anomaly detection |
 
-**Measured capacity.** 195,353
+**Measured capacity.** 82,396
 flows/second on a single commodity CPU, which is adequate for a mid-sized
 enterprise link without specialised hardware.
 
@@ -427,8 +431,8 @@ enterprise link without specialised hardware.
 
 ## 20. Recommendations
 
-1. **Deploy XGBoost as a triage-ranking layer**, not an autonomous control.
-2. **Operate at threshold 0.505**, or at the FPR-constrained point if the
+1. **Deploy LightGBM as a triage-ranking layer**, not an autonomous control.
+2. **Operate at threshold 0.465**, or at the FPR-constrained point if the
    SOC is already at queue capacity.
 3. **Re-derive the threshold on target-network data** before go-live.
 4. **Instrument per-service false-positive rates** from day one.
@@ -442,9 +446,9 @@ enterprise link without specialised hardware.
 
 ## 21. Conclusion
 
-A gradient-boosted flow classifier achieves strong aggregate detection on
-UNSW-NB15 and meets the pre-registered targets. The more valuable contribution is
-the qualification: by deduplicating before splitting, quantifying the TTL
+A gradient-boosted flow classifier meets 3 of 4 pre-registered targets on the authors' published partition, missing F1 >= 0.90, while meeting all of them on the pooled random split that most published results use. The more valuable
+contribution is the qualification: by evaluating on the authors' published
+partition rather than a random split, quantifying the TTL
 artefact with SHAP and an explicit ablation, and disaggregating performance by
 attack family and service, this project distinguishes what the model has learned
 about *attacks* from what it has learned about *this dataset*.
@@ -456,8 +460,15 @@ reporting only its headline F1 would have produced the former.
 
 ## 22. References
 
+Arp, D., Quiring, E., Pendlebury, F., Warnecke, A., Pierazzi, F., Wressnegger,
+C., Cavallaro, L. and Rieck, K. (2022). Dos and Don'ts of Machine Learning in
+Computer Security. *31st USENIX Security Symposium*. - The taxonomy of pitfalls
+this project's protocol is built to avoid; "sampling bias" and "data snooping"
+name the duplicate-leakage and threshold-on-test problems directly.
+
 Axelsson, S. (2000). The base-rate fallacy and the difficulty of intrusion
 detection. *ACM Transactions on Information and System Security*, 3(3), 186-205.
+- Why the precision reported here does not transfer to a production base rate.
 
 Breiman, L. (2001). Random Forests. *Machine Learning*, 45(1), 5-32.
 
@@ -493,8 +504,18 @@ of Machine Learning Research*, 12, 2825-2830.
 
 Saito, T. and Rehmsmeier, M. (2015). The Precision-Recall Plot Is More
 Informative than the ROC Plot When Evaluating Binary Classifiers on Imbalanced
-Datasets. *PLoS ONE*, 10(3), e0118432.
+Datasets. *PLoS ONE*, 10(3), e0118432. - Why model selection here uses PR-AUC
+rather than ROC-AUC or accuracy.
 
 Sommer, R. and Paxson, V. (2010). Outside the Closed World: On Using Machine
 Learning for Network Intrusion Detection. *IEEE Symposium on Security and
-Privacy*, 305-316.
+Privacy*, 305-316. - The standing critique of ML-based intrusion detection: the
+cost of false positives, the difficulty of obtaining representative evaluation
+data, and the semantic gap between a classifier's output and an actionable
+alert. It is the reason this project recommends analyst triage rather than
+autonomous blocking.
+
+Wilson, E. B. (1927). Probable Inference, the Law of Succession, and Statistical
+Inference. *Journal of the American Statistical Association*, 22(158), 209-212.
+- The score interval used to qualify per-family recall, where sample sizes fall
+as low as a few dozen flows.

@@ -12,10 +12,10 @@
 **Content**
 - Automated Detection of Malicious Network Activity
 - A machine-learning layer that reviews every network connection and ranks the suspicious ones for analysts
-- Proof-of-concept result: **91% of attacks detected**, with **7.14% of normal traffic flagged for review**
+- Proof-of-concept result: **96% of attacks detected**, with **26.74% of normal traffic flagged for review**
 - Recommendation: deploy as an **analyst assistant**, not an automated gatekeeper
 
-**Recommended visual:** Clean title slide; one large statistic — "91% of attacks detected" — as the focal point.
+**Recommended visual:** Clean title slide; one large statistic — "96% of attacks detected" — as the focal point.
 
 **Speaker notes:** Lead with the outcome and the recommendation. Signal early that this is a decision-support tool, so nobody leaves thinking we are proposing to let software block traffic on its own.
 
@@ -66,10 +66,10 @@
 ## Slide 5 — Detection Performance
 
 **Content**
-- Tested on **30,737 connections the system had never seen**
-- **Caught 12,430 of 13,642 attacks** (91.1%)
-- **Missed 1,212** (8.9%)
-- Flagged **1,221 of 17,095 normal connections** for review (7.14%)
+- Tested on **52,644 connections the system had never seen**
+- **Caught 18,231 of 18,982 attacks** (96.0%)
+- **Missed 751** (4.0%)
+- Flagged **9,000 of 33,662 normal connections** for review (26.74%)
 - Fast enough to keep up with our traffic on ordinary hardware — no special equipment needed
 
 **Recommended visual:** Four large stat tiles: attacks caught, attacks missed, normal traffic flagged, speed. `figures/fig16_model_comparison.png` (middle panel only) as support.
@@ -98,9 +98,9 @@
 **Content**
 - There is a dial. Turning it up catches more attacks and generates more false alarms; turning it down does the reverse
 - **This is a business decision about analyst capacity, not a technical one**
-- At the recommended setting: 91% of attacks caught, 7.14% of normal traffic flagged
-- A tighter setting is available: it alerts on only 0.82% of normal traffic, at the cost of catching 77% of attacks instead of 91%
-- At our illustrative volume of 10 million connections a day, that recommended setting implies roughly **714,240 items to review per day** — which is exactly the number we must size the team against
+- At the recommended setting: 96% of attacks caught, 26.74% of normal traffic flagged
+- A tighter setting is available: it alerts on only 5.84% of normal traffic, at the cost of catching 83% of attacks instead of 96%
+- At our illustrative volume of 10 million connections a day, that recommended setting implies roughly **2,673,640 items to review per day** — which is exactly the number we must size the team against
 
 **Recommended visual:** `figures/fig17_threshold_analysis.png`, left panel only, relabelled in plain language ("attacks caught" / "false alarms").
 
@@ -141,7 +141,7 @@
 ## Slide 10 — Key Takeaways
 
 **Content**
-1. **It works.** 91% of attacks detected on data the system had never seen, at ordinary hardware speed
+1. **It works.** 96% of attacks detected on data the system had never seen, at ordinary hardware speed
 2. **It is honest about what it misses.** Weaker on stealthy, low-volume attack types — documented, not hidden
 3. **It is explainable.** Every alert carries its reasons, satisfying audit and regulatory needs
 4. **It is a layer, not a replacement.** It works alongside existing controls and human judgement

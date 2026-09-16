@@ -97,16 +97,17 @@ def generate() -> None:
                 ablation_note += (
                     "\n\nThis is the most important negative result in the project, and it cuts "
                     "against the obvious reading of the SHAP chart. SHAP attributes the largest "
-                    "share of attributed impact to the TTL family, but attribution measures what "
-                    "the fitted model *used*, not what was *necessary*. Deleting those three "
-                    "columns costs essentially nothing, which means the remaining features carry "
-                    "near-equivalent information and the boosted tree simply re-routes through "
-                    "them. The artefact is a **redundant shortcut, not a crutch**. Two "
-                    "consequences follow. First, the headline number is not an artefact "
-                    "score - it survives the artefact's removal. Second, a SHAP-driven "
-                    "'remove the suspicious feature' remediation would have produced a model "
-                    "that looks cleaner and behaves identically, which is a warning about "
-                    "treating attribution as evidence of causation.")
+                    "share of decision impact to the TTL family, but attribution measures what "
+                    "the fitted model *relied on*, not what was *necessary*. Deleting those "
+                    f"three columns costs {abs(delta_f1):.4f} F1 - real, but an order of "
+                    "magnitude smaller than the attributed share would suggest. The remaining "
+                    "features carry near-equivalent information and the boosted tree re-routes "
+                    "through them, so the model **uses the artefact far more than it needs it**. "
+                    "Two consequences follow. First, the headline number is not an artefact "
+                    "score: it very largely survives the artefact's removal. Second, a "
+                    "SHAP-driven 'remove the suspicious feature' remediation would have produced "
+                    "a model that looks cleaner and behaves almost identically - a warning "
+                    "about treating attribution as evidence of causation.")
         if "keep_duplicates" in sub.index and "main" in sub.index:
             ablation_note += (
                 f"\n\nRetaining the duplicate records instead of removing them moves F1 from "

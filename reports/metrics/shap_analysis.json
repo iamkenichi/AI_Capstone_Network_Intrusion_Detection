@@ -1,404 +1,404 @@
 {
-  "model": "XGBoost",
+  "model": "LightGBM",
   "sample_size": 4000,
   "global_importance": [
     {
       "feature": "sttl",
-      "mean_abs_shap": 4.68887996673584,
-      "mean_shap": -3.203244924545288,
-      "max_abs_shap": 11.870186805725098,
-      "share_of_total": 0.47982901334762573
-    },
-    {
-      "feature": "ct_dst_src_ltm",
-      "mean_abs_shap": 0.6891400218009949,
-      "mean_shap": 0.043852001428604126,
-      "max_abs_shap": 2.332427978515625,
-      "share_of_total": 0.0705220028758049
+      "mean_abs_shap": 5.750973,
+      "mean_shap": 0.738566,
+      "max_abs_shap": 8.668646,
+      "share_of_total": 0.382628
     },
     {
       "feature": "ct_state_ttl",
-      "mean_abs_shap": 0.5415059924125671,
-      "mean_shap": -0.38190901279449463,
-      "max_abs_shap": 4.264860153198242,
-      "share_of_total": 0.055413998663425446
-    },
-    {
-      "feature": "dbytes",
-      "mean_abs_shap": 0.4650140106678009,
-      "mean_shap": 0.36915698647499084,
-      "max_abs_shap": 2.5929620265960693,
-      "share_of_total": 0.04758699983358383
-    },
-    {
-      "feature": "service_dns",
-      "mean_abs_shap": 0.3177329897880554,
-      "mean_shap": 0.1616639941930771,
-      "max_abs_shap": 4.410664081573486,
-      "share_of_total": 0.03251500055193901
-    },
-    {
-      "feature": "sbytes",
-      "mean_abs_shap": 0.23018699884414673,
-      "mean_shap": 0.12380699813365936,
-      "max_abs_shap": 2.300149917602539,
-      "share_of_total": 0.023555999621748924
-    },
-    {
-      "feature": "dmean",
-      "mean_abs_shap": 0.17721399664878845,
-      "mean_shap": 0.12341000139713287,
-      "max_abs_shap": 1.2010149955749512,
-      "share_of_total": 0.01813500002026558
-    },
-    {
-      "feature": "smean",
-      "mean_abs_shap": 0.16064700484275818,
-      "mean_shap": 0.02968199923634529,
-      "max_abs_shap": 1.272434949874878,
-      "share_of_total": 0.016440000385046005
-    },
-    {
-      "feature": "bytes_per_packet",
-      "mean_abs_shap": 0.14861300587654114,
-      "mean_shap": 0.04454199969768524,
-      "max_abs_shap": 1.4095720052719116,
-      "share_of_total": 0.01520800031721592
-    },
-    {
-      "feature": "ct_srv_src",
-      "mean_abs_shap": 0.14809300005435944,
-      "mean_shap": 0.027891000732779503,
-      "max_abs_shap": 1.6176329851150513,
-      "share_of_total": 0.015154999680817127
+      "mean_abs_shap": 1.708752,
+      "mean_shap": -0.463104,
+      "max_abs_shap": 3.406383,
+      "share_of_total": 0.113688
     },
     {
       "feature": "ct_srv_dst",
-      "mean_abs_shap": 0.14605900645256042,
-      "mean_shap": 0.09696400165557861,
-      "max_abs_shap": 1.0592080354690552,
-      "share_of_total": 0.014946999959647655
+      "mean_abs_shap": 0.768392,
+      "mean_shap": -0.274485,
+      "max_abs_shap": 3.629153,
+      "share_of_total": 0.051123
     },
     {
-      "feature": "load_log_ratio",
-      "mean_abs_shap": 0.13413399457931519,
-      "mean_shap": 0.09753599762916565,
-      "max_abs_shap": 1.183730959892273,
-      "share_of_total": 0.013725999742746353
-    },
-    {
-      "feature": "flow_bytes_total",
-      "mean_abs_shap": 0.11130200326442719,
-      "mean_shap": 0.05876699835062027,
-      "max_abs_shap": 0.6533859968185425,
-      "share_of_total": 0.011389999650418758
-    },
-    {
-      "feature": "dur",
-      "mean_abs_shap": 0.1049560010433197,
-      "mean_shap": 0.0353970006108284,
-      "max_abs_shap": 0.663329005241394,
-      "share_of_total": 0.010739999823272228
-    },
-    {
-      "feature": "dload",
-      "mean_abs_shap": 0.0939679965376854,
-      "mean_shap": 0.0046640001237392426,
-      "max_abs_shap": 0.6165919899940491,
-      "share_of_total": 0.009615999646484852
-    },
-    {
-      "feature": "ct_dst_sport_ltm",
-      "mean_abs_shap": 0.0850059986114502,
-      "mean_shap": 0.04109799861907959,
-      "max_abs_shap": 1.5899269580841064,
-      "share_of_total": 0.008698999881744385
-    },
-    {
-      "feature": "synack",
-      "mean_abs_shap": 0.08315800130367279,
-      "mean_shap": -0.01307199988514185,
-      "max_abs_shap": 0.4956269860267639,
-      "share_of_total": 0.008510000072419643
+      "feature": "ct_dst_src_ltm",
+      "mean_abs_shap": 0.648967,
+      "mean_shap": 0.072253,
+      "max_abs_shap": 1.987055,
+      "share_of_total": 0.043178
     },
     {
       "feature": "dttl",
-      "mean_abs_shap": 0.07947400212287903,
-      "mean_shap": 0.03198599815368652,
-      "max_abs_shap": 0.7282389998435974,
-      "share_of_total": 0.008132999762892723
+      "mean_abs_shap": 0.536727,
+      "mean_shap": 0.47557,
+      "max_abs_shap": 3.378436,
+      "share_of_total": 0.03571
     },
     {
-      "feature": "service_unknown",
-      "mean_abs_shap": 0.07130199670791626,
-      "mean_shap": 0.031982000917196274,
-      "max_abs_shap": 0.7009260058403015,
-      "share_of_total": 0.007296999916434288
+      "feature": "ct_srv_src",
+      "mean_abs_shap": 0.421668,
+      "mean_shap": -0.137157,
+      "max_abs_shap": 4.816529,
+      "share_of_total": 0.028055
+    },
+    {
+      "feature": "service_dns",
+      "mean_abs_shap": 0.377555,
+      "mean_shap": 0.055607,
+      "max_abs_shap": 3.996509,
+      "share_of_total": 0.02512
+    },
+    {
+      "feature": "dmean",
+      "mean_abs_shap": 0.335852,
+      "mean_shap": -0.053106,
+      "max_abs_shap": 1.523785,
+      "share_of_total": 0.022345
+    },
+    {
+      "feature": "dbytes",
+      "mean_abs_shap": 0.304166,
+      "mean_shap": 0.047348,
+      "max_abs_shap": 2.052,
+      "share_of_total": 0.020237
+    },
+    {
+      "feature": "ct_dst_sport_ltm",
+      "mean_abs_shap": 0.27124,
+      "mean_shap": 0.049527,
+      "max_abs_shap": 3.718153,
+      "share_of_total": 0.018046
+    },
+    {
+      "feature": "dload",
+      "mean_abs_shap": 0.259853,
+      "mean_shap": 0.055258,
+      "max_abs_shap": 0.915929,
+      "share_of_total": 0.017289
+    },
+    {
+      "feature": "smean",
+      "mean_abs_shap": 0.220298,
+      "mean_shap": -0.059095,
+      "max_abs_shap": 2.148016,
+      "share_of_total": 0.014657
+    },
+    {
+      "feature": "sbytes",
+      "mean_abs_shap": 0.200571,
+      "mean_shap": -0.039979,
+      "max_abs_shap": 1.355741,
+      "share_of_total": 0.013345
     },
     {
       "feature": "dloss",
-      "mean_abs_shap": 0.07123500108718872,
-      "mean_shap": 0.05573499947786331,
-      "max_abs_shap": 0.7503560185432434,
-      "share_of_total": 0.007290000095963478
+      "mean_abs_shap": 0.196065,
+      "mean_shap": -0.092735,
+      "max_abs_shap": 0.955669,
+      "share_of_total": 0.013045
     },
     {
-      "feature": "ackdat",
-      "mean_abs_shap": 0.06900499761104584,
-      "mean_shap": 0.05002899840474129,
-      "max_abs_shap": 0.3076539933681488,
-      "share_of_total": 0.007062000222504139
+      "feature": "bytes_per_packet",
+      "mean_abs_shap": 0.191177,
+      "mean_shap": -0.068868,
+      "max_abs_shap": 1.778122,
+      "share_of_total": 0.01272
     },
     {
-      "feature": "src_byte_ratio",
-      "mean_abs_shap": 0.06400100141763687,
-      "mean_shap": 0.0055740000680089,
-      "max_abs_shap": 0.7661330103874207,
-      "share_of_total": 0.006548999808728695
+      "feature": "ct_dst_ltm",
+      "mean_abs_shap": 0.140558,
+      "mean_shap": 0.0638,
+      "max_abs_shap": 2.698703,
+      "share_of_total": 0.009352
     },
     {
-      "feature": "service_http",
-      "mean_abs_shap": 0.060552000999450684,
-      "mean_shap": 0.030657999217510223,
-      "max_abs_shap": 1.2027080059051514,
-      "share_of_total": 0.006196000147610903
+      "feature": "ct_src_ltm",
+      "mean_abs_shap": 0.136952,
+      "mean_shap": 0.003154,
+      "max_abs_shap": 2.580714,
+      "share_of_total": 0.009112
+    },
+    {
+      "feature": "stcpb",
+      "mean_abs_shap": 0.135225,
+      "mean_shap": 0.032841,
+      "max_abs_shap": 0.780932,
+      "share_of_total": 0.008997
+    },
+    {
+      "feature": "dtcpb",
+      "mean_abs_shap": 0.133143,
+      "mean_shap": -0.042962,
+      "max_abs_shap": 0.905506,
+      "share_of_total": 0.008858
     },
     {
       "feature": "tcprtt",
-      "mean_abs_shap": 0.05994800105690956,
-      "mean_shap": 0.016752999275922775,
-      "max_abs_shap": 0.46245700120925903,
-      "share_of_total": 0.006134999915957451
+      "mean_abs_shap": 0.132181,
+      "mean_shap": 0.066846,
+      "max_abs_shap": 1.332439,
+      "share_of_total": 0.008794
     },
     {
-      "feature": "sjit",
-      "mean_abs_shap": 0.059248000383377075,
-      "mean_shap": -0.016220999881625175,
-      "max_abs_shap": 0.3832769989967346,
-      "share_of_total": 0.0060629998333752155
+      "feature": "src_loss_rate",
+      "mean_abs_shap": 0.117401,
+      "mean_shap": -0.00504,
+      "max_abs_shap": 2.269032,
+      "share_of_total": 0.007811
+    },
+    {
+      "feature": "dur",
+      "mean_abs_shap": 0.116673,
+      "mean_shap": -0.002586,
+      "max_abs_shap": 0.699142,
+      "share_of_total": 0.007763
+    },
+    {
+      "feature": "load_log_ratio",
+      "mean_abs_shap": 0.114373,
+      "mean_shap": -0.057632,
+      "max_abs_shap": 0.959132,
+      "share_of_total": 0.00761
+    },
+    {
+      "feature": "djit",
+      "mean_abs_shap": 0.112708,
+      "mean_shap": -0.039244,
+      "max_abs_shap": 0.766893,
+      "share_of_total": 0.007499
+    },
+    {
+      "feature": "ackdat",
+      "mean_abs_shap": 0.111892,
+      "mean_shap": 0.051021,
+      "max_abs_shap": 0.740141,
+      "share_of_total": 0.007444
     }
   ],
   "artifact_diagnostic": {
     "impact_share_by_group": {
-      "TTL family\n(sttl, dttl, ct_state_ttl)": 0.5434,
-      "Volume & rate\n(bytes, packets, load)": 0.1605,
-      "Connection counters\n(ct_*, excl. ct_state_ttl)": 0.1225,
-      "Engineered in this project": 0.0751,
-      "Timing & TCP state": 0.0612,
-      "Categorical\n(proto, service, state)": 0.0575
+      "TTL family\n(sttl, dttl, ct_state_ttl)": 0.532,
+      "Connection counters\n(ct_*, excl. ct_state_ttl)": 0.1651,
+      "Volume & rate\n(bytes, packets, load)": 0.125,
+      "Timing & TCP state": 0.0716,
+      "Engineered in this project": 0.0653,
+      "Categorical\n(proto, service, state)": 0.0489
     },
-    "ttl_family_share": 0.5434
+    "ttl_family_share": 0.532
   },
   "local_cases": {
     "True positive (attack correctly detected)": {
-      "test_row_position": 17058,
-      "attack_score": 0.9968,
+      "test_row_position": 32858,
+      "attack_score": 0.999843,
       "true_label": 1,
       "predicted": 1,
-      "attack_cat": "Reconnaissance",
-      "proto": "tcp",
+      "attack_cat": "Analysis",
+      "proto": "unas",
       "service": "-",
-      "state": "fin",
-      "base_value": 0.002211,
+      "state": "int",
+      "base_value": -2.020719,
       "top_contributions": [
         {
-          "feature": "bytes_per_packet",
-          "shap": 1.4048800468444824,
-          "value": -1.10228
-        },
-        {
           "feature": "sttl",
-          "shap": 1.2714799642562866,
-          "value": 1.05704
+          "shap": 5.22287,
+          "value": 1.09968
         },
         {
-          "feature": "ct_dst_src_ltm",
-          "shap": 0.9799900054931641,
-          "value": -0.4492
+          "feature": "proto_unas",
+          "shap": 1.75961,
+          "value": 1.0
         },
         {
-          "feature": "sbytes",
-          "shap": 0.7252399921417236,
-          "value": -0.44779
+          "feature": "ct_state_ttl",
+          "shap": 1.74297,
+          "value": 1.42034
         },
         {
-          "feature": "flow_bytes_total",
-          "shap": 0.495279997587204,
-          "value": -0.53413
+          "feature": "ct_dst_sport_ltm",
+          "shap": 1.71683,
+          "value": 0.28812
         },
         {
           "feature": "ct_srv_dst",
-          "shap": 0.2284500002861023,
-          "value": -0.61018
+          "shap": -1.4465,
+          "value": 0.6636
         },
         {
-          "feature": "src_byte_ratio",
-          "shap": 0.22224999964237213,
-          "value": 0.0998
+          "feature": "ct_dst_src_ltm",
+          "shap": -0.76365,
+          "value": -0.14802
         },
         {
-          "feature": "jit_log_ratio",
-          "shap": 0.1960500031709671,
-          "value": 0.88146
+          "feature": "sload",
+          "shap": 0.48871,
+          "value": 1.9133
+        },
+        {
+          "feature": "sbytes",
+          "shap": 0.44512,
+          "value": -1.11877
         }
       ]
     },
     "True negative (benign correctly cleared)": {
-      "test_row_position": 25474,
-      "attack_score": 3.5e-05,
+      "test_row_position": 14899,
+      "attack_score": 4e-06,
       "true_label": 0,
       "predicted": 0,
-      "attack_cat": "Normal",
-      "proto": "udp",
-      "service": "dns",
-      "state": "con",
-      "base_value": 0.002211,
-      "top_contributions": [
-        {
-          "feature": "sttl",
-          "shap": -11.092089653015137,
-          "value": -1.02135
-        },
-        {
-          "feature": "ct_state_ttl",
-          "shap": -1.0860600471496582,
-          "value": -0.93071
-        },
-        {
-          "feature": "service_dns",
-          "shap": 0.9602000117301941,
-          "value": 1.0
-        },
-        {
-          "feature": "ct_dst_src_ltm",
-          "shap": 0.632830023765564,
-          "value": -0.4492
-        },
-        {
-          "feature": "sbytes",
-          "shap": 0.38846999406814575,
-          "value": -1.29656
-        },
-        {
-          "feature": "dmean",
-          "shap": 0.1784999966621399,
-          "value": 0.22009
-        },
-        {
-          "feature": "ct_srv_dst",
-          "shap": 0.17396000027656555,
-          "value": -0.00266
-        },
-        {
-          "feature": "ackdat",
-          "shap": 0.13083000481128693,
-          "value": -0.721
-        }
-      ]
-    },
-    "False positive (benign wrongly alerted)": {
-      "test_row_position": 8112,
-      "attack_score": 0.632648,
-      "true_label": 0,
-      "predicted": 1,
       "attack_cat": "Normal",
       "proto": "tcp",
       "service": "-",
       "state": "fin",
-      "base_value": 0.002211,
+      "base_value": -2.020719,
       "top_contributions": [
         {
-          "feature": "ct_dst_src_ltm",
-          "shap": -1.0674699544906616,
-          "value": 0.17163
+          "feature": "sttl",
+          "shap": -7.58309,
+          "value": -0.97795
         },
+        {
+          "feature": "ct_state_ttl",
+          "shap": -2.83867,
+          "value": -0.94734
+        },
+        {
+          "feature": "ct_srv_src",
+          "shap": -0.73559,
+          "value": 0.60422
+        },
+        {
+          "feature": "dmean",
+          "shap": 0.44138,
+          "value": 0.30938
+        },
+        {
+          "feature": "sbytes",
+          "shap": -0.29999,
+          "value": 0.7313
+        },
+        {
+          "feature": "dbytes",
+          "shap": 0.25837,
+          "value": 0.49049
+        },
+        {
+          "feature": "ct_dst_src_ltm",
+          "shap": -0.25426,
+          "value": -0.30781
+        },
+        {
+          "feature": "jit_log_ratio",
+          "shap": 0.21601,
+          "value": 0.90055
+        }
+      ]
+    },
+    "False positive (benign wrongly alerted)": {
+      "test_row_position": 25764,
+      "attack_score": 0.851472,
+      "true_label": 0,
+      "predicted": 1,
+      "attack_cat": "Normal",
+      "proto": "tcp",
+      "service": "http",
+      "state": "fin",
+      "base_value": -2.020719,
+      "top_contributions": [
         {
           "feature": "sttl",
-          "shap": 0.9876300096511841,
-          "value": 1.05704
+          "shap": 4.54911,
+          "value": -0.68913
         },
         {
-          "feature": "dload",
-          "shap": 0.25220000743865967,
-          "value": 0.03239
+          "feature": "dttl",
+          "shap": 0.95257,
+          "value": 1.06455
         },
         {
-          "feature": "dloss",
-          "shap": -0.23965999484062195,
-          "value": 0.12526
+          "feature": "ct_state_ttl",
+          "shap": 0.8403,
+          "value": 0.2365
         },
         {
-          "feature": "tcprtt",
-          "shap": 0.1879200041294098,
-          "value": -0.23167
+          "feature": "ct_dst_ltm",
+          "shap": 0.52363,
+          "value": 0.69323
         },
         {
-          "feature": "flow_bytes_total",
-          "shap": 0.1818999946117401,
-          "value": 1.09774
+          "feature": "ct_srv_dst",
+          "shap": -0.50522,
+          "value": -0.43806
         },
         {
-          "feature": "smean",
-          "shap": 0.18016000092029572,
-          "value": 2.4393
+          "feature": "ct_dst_src_ltm",
+          "shap": -0.50504,
+          "value": -0.30781
         },
         {
-          "feature": "service_dns",
-          "shap": -0.16167999804019928,
-          "value": 0.0
+          "feature": "dbytes",
+          "shap": -0.48995,
+          "value": 0.23051
+        },
+        {
+          "feature": "load_log_ratio",
+          "shap": -0.45051,
+          "value": -0.42534
         }
       ]
     },
     "False negative (attack missed)": {
-      "test_row_position": 17535,
-      "attack_score": 0.346391,
+      "test_row_position": 531,
+      "attack_score": 0.26803,
       "true_label": 1,
       "predicted": 0,
       "attack_cat": "Fuzzers",
       "proto": "tcp",
       "service": "-",
       "state": "fin",
-      "base_value": 0.002211,
+      "base_value": -2.020719,
       "top_contributions": [
         {
-          "feature": "ct_dst_src_ltm",
-          "shap": -1.2267999649047852,
-          "value": 0.17163
-        },
-        {
           "feature": "sttl",
-          "shap": 0.9520400166511536,
-          "value": 1.05704
+          "shap": 4.39706,
+          "value": 1.09968
         },
         {
-          "feature": "smean",
-          "shap": -0.18616999685764313,
-          "value": -0.75384
+          "feature": "ct_srv_dst",
+          "shap": -1.81477,
+          "value": 0.34884
         },
         {
-          "feature": "service_dns",
-          "shap": -0.17663000524044037,
-          "value": 0.0
+          "feature": "dttl",
+          "shap": 0.94334,
+          "value": 1.06455
         },
         {
-          "feature": "synack",
-          "shap": -0.1756799966096878,
-          "value": 1.25657
+          "feature": "ct_srv_src",
+          "shap": -0.78939,
+          "value": 0.29344
         },
         {
-          "feature": "bytes_per_packet",
-          "shap": 0.17215000092983246,
-          "value": -1.10489
+          "feature": "ct_dst_src_ltm",
+          "shap": -0.69248,
+          "value": 0.49114
         },
         {
-          "feature": "sbytes",
-          "shap": 0.14247000217437744,
-          "value": -0.4682
+          "feature": "ct_state_ttl",
+          "shap": 0.55705,
+          "value": 0.2365
         },
         {
-          "feature": "flow_bytes_total",
-          "shap": -0.11912000179290771,
-          "value": -0.59342
+          "feature": "dmean",
+          "shap": -0.43996,
+          "value": -0.1634
+        },
+        {
+          "feature": "dload",
+          "shap": 0.36069,
+          "value": -0.22939
         }
       ]
     }

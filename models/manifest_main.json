@@ -1,6 +1,6 @@
 {
   "experiment": "main",
-  "description": "Primary protocol: deduplicated corpus, all features, engineered features on.",
+  "description": "Primary protocol: the authors' published partition, each side deduplicated and train/test overlap removed.",
   "settings": {
     "include_engineered": true,
     "exclude": [],
@@ -9,11 +9,11 @@
   "random_state": 42,
   "cv_folds": 5,
   "tuning_scorer": "f1",
-  "n_train_rows": 92210,
-  "n_val_rows": 30737,
-  "train_attack_rate": 0.44381,
-  "val_attack_rate": 0.4438,
-  "scale_pos_weight_used": 1.2532,
+  "n_train_rows": 80832,
+  "n_val_rows": 20208,
+  "train_attack_rate": 0.48718,
+  "val_attack_rate": 0.48718,
+  "scale_pos_weight_used": 1.0526,
   "models": [
     "isolation_forest",
     "lightgbm",

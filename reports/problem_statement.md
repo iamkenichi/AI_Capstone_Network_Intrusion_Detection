@@ -129,6 +129,34 @@ Equally binding, and in a capstone arguably more so:
 | M6 | Every reported number is produced by executed code and written to `reports/metrics/`. |
 | M7 | Dataset artefacts that inflate performance are identified, quantified and reported. |
 
+### 4.2b Declared deviation from pre-registration
+
+Pre-registration is only worth anything if departures from it are declared, so
+this one is declared here rather than left for a reader to notice.
+
+T1–T7 above were registered against an earlier evaluation protocol: pool the
+published training and test files, deduplicate the pooled corpus, and draw a
+stratified 60/20/20 random split. **The primary protocol was subsequently
+changed** to the authors' published partition — each side deduplicated
+independently, a validation set carved from the published training file, and any
+test record whose feature vector also occurs in development removed.
+
+The change was made because the two protocols are not equally informative. A
+random split *guarantees* that the test set is drawn from the training
+distribution. The published partition does not, and the gap between them is the
+part of a benchmark score that would not survive contact with a different
+network — which is exactly what an intrusion detector needs to be judged on.
+
+Two consequences, both handled explicitly rather than quietly:
+
+1. **The targets were not rebased.** T1–T7 are reported against the harder
+   protocol at the values originally registered. Lowering a pre-registered bar
+   to fit the result it was written to test would defeat its purpose. Where a
+   target is not met, the report says so.
+2. **The old protocol is still run**, as the `pooled_random` ablation, so the
+   cost of the change is visible as a number rather than asserted as a
+   principle.
+
 ### 4.3 What would count as failure
 
 Stated explicitly, because a success criterion with no failure condition is not
@@ -209,7 +237,7 @@ SHAP is therefore treated as a core deliverable (Phase 8), not an optional extra
 | **Synthetic traffic.** Generated on a 2015 IXIA PerfectStorm testbed, not captured from a real network. | Benign traffic lacks the messiness of real user behaviour; the model may be separating "generator A from generator B" rather than "benign from malicious". |
 | **Inverted class balance.** Attacks are 63.9% of the published corpus (44.4% after deduplication). | Precision measured here will **not** transfer to a production base rate. Recall and FPR will. |
 | **TTL artefact.** The benign and attack generators used different initial TTL values, making `sttl` a near-label proxy. | Quantified with SHAP and an explicit `no_ttl` ablation rather than hand-waved. |
-| **40.4% duplicate records.** Duplication is class-correlated (Generic 87.6%, Normal 8.1%). | Handled by deduplicating before splitting; the cost is quantified by ablation. |
+| **40.4% duplicate records.** Duplication is class-correlated (Generic 87.6%, Normal 8.1%). | Handled by deduplicating each published partition before splitting, and by removing test records whose feature vector also occurs in development; the cost of skipping either is quantified by ablation. |
 | **No timestamps, IPs or ports** in the partitioned files. | **No temporal holdout is possible**, so concept drift cannot be measured — only reasoned about. No host-level or entity-grouped analysis is possible. |
 | **2015 vintage.** The attack taxonomy predates modern ransomware, living-off-the-land, cloud-native and supply-chain techniques. | Conclusions are about method, not about current threat coverage. |
 
@@ -264,8 +292,9 @@ normal work looks unusual.
 | **Data acquisition** | Programmatic download with independent integrity verification (row counts, schema, target encoding, SHA-256) | `src/data_loader.py`, `reports/dataset_documentation.md` |
 | **Data understanding** | Full profiling; duplicate, defect and artefact discovery; per-column dictionary | `reports/data_dictionary.csv`, `notebooks/01` |
 | **EDA** | 13 figures with written interpretations; outliers analysed, not deleted | `figures/fig01`–`fig13`, `notebooks/02` |
-| **Preprocessing** | Leak-free `Pipeline`; dedup before split; stratified 60/20/20 at `random_state=42` | `src/preprocessing.py`, `notebooks/03` |
+| **Preprocessing** | Leak-free `Pipeline`; published partition, each side deduplicated, train/test overlap removed; 80/20 development split stratified on `attack_cat` at `random_state=42` | `src/preprocessing.py`, `notebooks/03` |
 | **Feature engineering** | 15 row-wise, deployable, domain-motivated features | `src/features.py` |
+| **Feature selection & reduction** | Mutual-information filter and PCA, fitted on training data only, run as a supplement after the model was frozen | `src/feature_analysis.py` |
 | **Modelling** | 4 supervised families + 1 unsupervised; randomised search under 5-fold stratified CV | `src/train.py`, `notebooks/04` |
 | **Evaluation** | 9-metric comparison; ROC/PR curves; confusion matrices; threshold analysis on validation | `src/evaluate.py`, `notebooks/05` |
 | **Explainability** | Global, directional and local SHAP; artefact diagnostic | `src/explain.py`, `notebooks/06` |

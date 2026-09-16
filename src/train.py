@@ -76,9 +76,13 @@ def _logistic_regression() -> LogisticRegression:
     """
     L2-penalised logistic regression solved with L-BFGS.
 
-    Solver choice is empirical, not default-by-habit. Benchmarked on the 92,210
-    x 73 training design matrix (see reports/Model_Evaluation_Report.md,
-    "Solver selection"):
+    Solver choice is empirical, not default-by-habit. Benchmarked once, on the
+    92,210 x 73 design matrix of the pooled random split (now carried as the
+    ``pooled_random`` ablation; the primary protocol's training split is a
+    similar shape). The conclusion is about solver behaviour on near-separable
+    data, not about that particular partition, so it was not re-run when the
+    primary protocol changed. See reports/Model_Evaluation_Report.md,
+    "Solver selection":
 
         lbfgs     / L2 / C=1     3.6 s   validation F1 0.8566
         liblinear / L2 / C=1    10.0 s   validation F1 0.8560
@@ -97,7 +101,10 @@ def _logistic_regression() -> LogisticRegression:
     """
     return LogisticRegression(
         solver="lbfgs",
-        penalty="l2",
+        # scikit-learn 1.8 deprecated `penalty`; L2 is now expressed as
+        # l1_ratio=0 and is the default. Pass it explicitly so the intent stays
+        # readable, without triggering the FutureWarning.
+        l1_ratio=0,
         max_iter=3000,
         random_state=config.RANDOM_STATE,
         # n_jobs is not set: lbfgs ignores it for binary problems, and leaving it
@@ -427,19 +434,49 @@ def train_isolation_forest(
 # Orchestration
 # --------------------------------------------------------------------------- #
 ABLATIONS: dict[str, str] = {
-    "main": "Primary protocol: deduplicated corpus, all features, engineered features on.",
+    "main": ("Primary protocol: the authors' published partition, each side deduplicated "
+             "and train/test overlap removed."),
+    "pooled_random": ("Both published files pooled, deduplicated together, then split at "
+                      "random - the easier protocol most published benchmarks use."),
     "keep_duplicates": "Duplicate flow records retained, quantifying the optimism they cause.",
     "no_ttl": "sttl, dttl and ct_state_ttl removed, quantifying reliance on the TTL artefact.",
     "no_engineered": "Engineered features disabled, isolating their contribution.",
     "smote": "SMOTE oversampling of the training split instead of class weighting.",
-    "official_split": "The dataset authors' published train/test partition, duplicates intact.",
+    "official_split_raw": ("The published partition exactly as distributed - no "
+                           "deduplication, no overlap removal."),
+}
+
+#: Human-readable names, defined once here so the reports, the decks and the
+#: figures cannot drift apart from the registry or from each other.
+ABLATION_LABELS: dict[str, str] = {
+    "main": "Primary protocol (published partition)",
+    "pooled_random": "Pooled random split",
+    "keep_duplicates": "Duplicates retained",
+    "no_ttl": "TTL features removed",
+    "no_engineered": "Engineered features removed",
+    "smote": "SMOTE instead of class weights",
+    "official_split_raw": "Published partition, as distributed",
 }
 
 
 def load_splits(ablation: str = "main"):
-    """Return ``(train, val, test)`` frames for the requested experiment."""
-    if ablation == "official_split":
+    """Return ``(train, val, test)`` frames for the requested experiment.
+
+    ``main`` is the published-partition protocol: harder than a random split, and
+    the one the headline numbers are reported on. The random split it replaced is
+    still run, as ``pooled_random``, so the gap between the two is measured rather
+    than argued about.
+    """
+    # Ablations that vary FEATURES or SAMPLING keep the primary protocol, so the
+    # only thing that changes is the thing being ablated. Only the experiments
+    # whose subject IS the protocol use a different split.
+    if ablation in ("main", "no_ttl", "no_engineered", "smote"):
+        train, val, test, _ = preprocessing.split_published(verbose=True)
+        return train, val, test
+    if ablation == "official_split_raw":
         return preprocessing.split_official(verbose=True)
+    # pooled_random and keep_duplicates form their own pair: identical except for
+    # deduplication, so that comparison isolates duplicate leakage.
     deduplicate = ablation != "keep_duplicates"
     corpus, _ = preprocessing.prepare_corpus(deduplicate=deduplicate, verbose=True)
     return preprocessing.split_corpus(corpus, verbose=True)

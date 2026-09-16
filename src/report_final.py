@@ -22,6 +22,7 @@ import pandas as pd
 from src import config, evaluate
 from src.features import ENGINEERED_FEATURE_DOCS
 from src.report import MISSING, _csv, _json, _model_table, _write, describe_error_confidence
+from src.train import ABLATION_LABELS  # single source of truth for experiment names
 
 
 def _context() -> dict:
@@ -66,14 +67,6 @@ def _ablation_frame(ctx: dict) -> pd.DataFrame | None:
     return ablations.xs(ctx["best"], level=1)
 
 
-ABLATION_LABELS = {
-    "main": "Primary protocol (headline)",
-    "keep_duplicates": "Duplicates retained",
-    "no_ttl": "TTL features removed",
-    "no_engineered": "Engineered features removed",
-    "smote": "SMOTE instead of class weights",
-    "official_split": "Authors' published split",
-}
 
 #: Below this absolute F1 change, an ablation is read as "made no material difference".
 ABLATION_MATERIAL_F1 = 0.01
@@ -91,18 +84,35 @@ def _ablation_reading(ablation: pd.DataFrame | None) -> str:
     base = ablation.loc["main"]
     lines: list[str] = []
 
-    if "keep_duplicates" in ablation.index:
-        row = ablation.loc["keep_duplicates"]
+    if "pooled_random" in ablation.index:
+        row = ablation.loc["pooled_random"]
         lines.append(
-            f"**Duplicates retained ({row['f1'] - base['f1']:+.4f} F1, "
-            f"{row['pr_auc'] - base['pr_auc']:+.4f} PR-AUC).** Skipping deduplication would "
-            f"have produced a headline F1 of {row['f1']:.4f} instead of {base['f1']:.4f}, and a "
-            f"PR-AUC of {row['pr_auc']:.4f}. Nothing about the model improved; the test split "
-            "simply contained records the model had already memorised from training. This is "
-            "the single largest effect in the table, and it is a *procedural* effect, not a "
-            "modelling one - which is why deduplication happens before splitting in this "
-            "project and why published UNSW-NB15 results that omit it are not comparable to "
-            "these numbers.")
+            f"**Pooled random split ({row['f1'] - base['f1']:+.4f} F1, FPR "
+            f"{base['false_positive_rate']:.1%} to {row['false_positive_rate']:.1%}).** This is "
+            "the protocol most published UNSW-NB15 results use: pool the two files, deduplicate, "
+            f"then split at random. It reports F1 {row['f1']:.4f} against the primary protocol's "
+            f"{base['f1']:.4f}. The model is identical; what changes is that a random split "
+            "*guarantees* the test set is drawn from the training distribution, and the authors' "
+            "partition does not. The primary protocol is the harder one, and it is the one the "
+            "headline figures are measured on precisely because the gap between these two rows "
+            "is the part of a benchmark score that does not survive contact with a new network.")
+
+    if "keep_duplicates" in ablation.index and "pooled_random" in ablation.index:
+        row = ablation.loc["keep_duplicates"]
+        # Compared against pooled_random, NOT against main: these two share the
+        # random-split protocol and differ only in deduplication, so the
+        # difference between them isolates duplicate leakage on its own.
+        pooled = ablation.loc["pooled_random"]
+        lines.append(
+            f"**Duplicates retained ({row['f1'] - pooled['f1']:+.4f} F1 against the pooled "
+            f"random split, {row['f1'] - base['f1']:+.4f} against the primary protocol).** This "
+            "row is paired with the previous one rather than with the headline: the two share "
+            "the random-split protocol and differ only in whether duplicates were removed, so "
+            f"the gap between them - {row['f1']:.4f} against {pooled['f1']:.4f} - is duplicate "
+            "leakage measured on its own. Nothing about the model improved; the test split "
+            "simply contained records it had already memorised. Stacked on top of the "
+            f"protocol effect, the two together account for {row['f1'] - base['f1']:+.4f} F1 - "
+            "more than any modelling decision in this project.")
 
     if "no_ttl" in ablation.index:
         row = ablation.loc["no_ttl"]
@@ -120,13 +130,15 @@ def _ablation_reading(ablation: pd.DataFrame | None) -> str:
                 "counter-intuitive result in the project. SHAP attributes the largest single "
                 "share of decision impact to `sttl`, which invites the conclusion that the "
                 "model is riding the capture artefact - yet deleting all three TTL columns and "
-                f"retraining changes F1 by {delta:+.4f}. Attribution describes what the fitted "
-                "model *used*; it does not establish what was *necessary*. The artefact is a "
-                "**redundant shortcut rather than a crutch**: the boosted tree re-routes "
-                "through correlated features at no measurable cost. Two conclusions follow - "
-                "the headline number does not depend on the artefact, and 'SHAP flagged it, so "
-                "remove it' would have been remediation theatre, changing the explanation "
-                "while leaving the behaviour intact.")
+                f"retraining costs only {abs(delta):.4f} F1. The gap between how much the model "
+                "*uses* those columns and how little it *needs* them is the finding. "
+                "Attribution describes what a fitted model relied on; it does not establish "
+                "what was necessary, because the remaining features carry near-equivalent "
+                "information and the boosted tree simply re-routes through them. Two "
+                "consequences follow. The headline number is not an artefact score - it very "
+                "largely survives the artefact's removal. And 'SHAP flagged it, so remove it' "
+                "would have been remediation theatre: a model that looks cleaner and behaves "
+                "almost identically.")
 
     if "no_engineered" in ablation.index:
         row = ablation.loc["no_engineered"]
@@ -152,18 +164,16 @@ def _ablation_reading(ablation: pd.DataFrame | None) -> str:
             "not used in the final pipeline because it costs compute and adds a synthetic-data "
             "assumption without buying anything measurable.")
 
-    if "official_split" in ablation.index:
-        row = ablation.loc["official_split"]
+    if "official_split_raw" in ablation.index:
+        row = ablation.loc["official_split_raw"]
         lines.append(
-            f"**Authors' published split ({row['f1'] - base['f1']:+.4f} F1, precision "
-            f"{base['precision']:.4f} to {row['precision']:.4f}, FPR "
-            f"{base['false_positive_rate']:.1%} to {row['false_positive_rate']:.1%}).** The "
-            "same code, the same hyper-parameters, a different partition - and the detector "
-            f"changes character, trading precision for recall ({row['recall']:.4f}). The "
-            "published partition is not a random draw from the same distribution as the "
-            "corpus, so this row is the closest thing available here to an out-of-distribution "
-            "test. It is the empirical basis for the claim that these numbers describe "
-            "performance *on this corpus* and would need recalibration on any real network.")
+            f"**Published partition, as distributed ({row['f1'] - base['f1']:+.4f} F1).** The "
+            "same partition as the primary protocol, but with neither cleaning step applied: "
+            "duplicate records left in each side, and records occurring in both train and test "
+            f"left in both. It reports F1 {row['f1']:.4f} and recall {row['recall']:.4f}. The "
+            "difference against the primary row is the combined value of deduplicating each "
+            "partition and removing the train/test overlap - two steps that cost nothing to "
+            "apply and that a benchmark number quietly inherits if they are skipped.")
 
     return "\n\n".join(lines)
 
@@ -240,6 +250,34 @@ def generate_final_report(ctx: dict) -> None:
     target_rows = "\n".join(
         f"| {desc} | {value:.4f} | {'MET' if value >= bar else 'NOT MET'} |"
         for desc, value, bar in targets)
+    met = [t for t in targets if t[1] >= t[2]]
+    unmet = [t for t in targets if t[1] < t[2]]
+
+    # These targets were pre-registered BEFORE the primary protocol was changed
+    # to the published partition. They are reported against the harder protocol
+    # unchanged - lowering a pre-registered bar to fit the result it was written
+    # to test would defeat the point of pre-registering it.
+    if not unmet:
+        research_answer = (
+            f"yes for the aggregate metrics - all {len(targets)} pre-registered numeric "
+            "targets are met on the primary protocol")
+        conclusion_clause = (
+            "achieves strong aggregate detection on the authors' published UNSW-NB15 "
+            "partition and meets every pre-registered target")
+    else:
+        shortfalls = "; ".join(
+            f"{desc} (achieved {value:.4f})" for desc, value, _ in unmet)
+        verb = "is" if len(unmet) == 1 else "are"
+        research_answer = (
+            f"partially. {len(met)} of {len(targets)} pre-registered targets are met on the "
+            f"primary protocol; {len(unmet)} {verb} not - {shortfalls}. Those targets were "
+            "registered before the primary protocol was tightened to the published partition. "
+            "They are reported here unchanged rather than rebased onto the easier pooled random "
+            "split, which does still meet them (section 12.4)")
+        conclusion_clause = (
+            f"meets {len(met)} of {len(targets)} pre-registered targets on the authors' "
+            f"published partition, missing {', '.join(d for d, _, _ in unmet)}, while meeting "
+            "all of them on the pooled random split that most published results use")
 
     ttl_share = (shap_payload or {}).get("artifact_diagnostic", {}).get("ttl_family_share")
 
@@ -346,11 +384,12 @@ a stated 20:1 cost assumption with published sensitivity to that assumption.
 > benign network traffic while maintaining an operationally acceptable
 > false-negative and false-positive rate?
 
-**Answer, on this data:** yes for the aggregate metrics - the pre-registered F1,
-ROC-AUC and recall targets are met (section 12). But with three material
-qualifications: performance is uneven across attack families, a substantial
-share of the signal is artefactual, and the precision figure will not transfer
-to a production base rate.
+**Answer, on this data:** {research_answer} (section 12.2).
+
+Three qualifications apply to that answer whichever way it lands: performance is
+uneven across attack families, a substantial share of the attributed signal is
+artefactual, and the precision figure will not transfer to a production base
+rate.
 
 ---
 
@@ -624,9 +663,9 @@ enterprise link without specialised hardware.
 
 ## 21. Conclusion
 
-A gradient-boosted flow classifier achieves strong aggregate detection on
-UNSW-NB15 and meets the pre-registered targets. The more valuable contribution is
-the qualification: by deduplicating before splitting, quantifying the TTL
+A gradient-boosted flow classifier {conclusion_clause}. The more valuable
+contribution is the qualification: by evaluating on the authors' published
+partition rather than a random split, quantifying the TTL
 artefact with SHAP and an explicit ablation, and disaggregating performance by
 attack family and service, this project distinguishes what the model has learned
 about *attacks* from what it has learned about *this dataset*.
@@ -638,8 +677,15 @@ reporting only its headline F1 would have produced the former.
 
 ## 22. References
 
+Arp, D., Quiring, E., Pendlebury, F., Warnecke, A., Pierazzi, F., Wressnegger,
+C., Cavallaro, L. and Rieck, K. (2022). Dos and Don'ts of Machine Learning in
+Computer Security. *31st USENIX Security Symposium*. - The taxonomy of pitfalls
+this project's protocol is built to avoid; "sampling bias" and "data snooping"
+name the duplicate-leakage and threshold-on-test problems directly.
+
 Axelsson, S. (2000). The base-rate fallacy and the difficulty of intrusion
 detection. *ACM Transactions on Information and System Security*, 3(3), 186-205.
+- Why the precision reported here does not transfer to a production base rate.
 
 Breiman, L. (2001). Random Forests. *Machine Learning*, 45(1), 5-32.
 
@@ -675,11 +721,21 @@ of Machine Learning Research*, 12, 2825-2830.
 
 Saito, T. and Rehmsmeier, M. (2015). The Precision-Recall Plot Is More
 Informative than the ROC Plot When Evaluating Binary Classifiers on Imbalanced
-Datasets. *PLoS ONE*, 10(3), e0118432.
+Datasets. *PLoS ONE*, 10(3), e0118432. - Why model selection here uses PR-AUC
+rather than ROC-AUC or accuracy.
 
 Sommer, R. and Paxson, V. (2010). Outside the Closed World: On Using Machine
 Learning for Network Intrusion Detection. *IEEE Symposium on Security and
-Privacy*, 305-316.
+Privacy*, 305-316. - The standing critique of ML-based intrusion detection: the
+cost of false positives, the difficulty of obtaining representative evaluation
+data, and the semantic gap between a classifier's output and an actionable
+alert. It is the reason this project recommends analyst triage rather than
+autonomous blocking.
+
+Wilson, E. B. (1927). Probable Inference, the Law of Succession, and Statistical
+Inference. *Journal of the American Statistical Association*, 22(158), 209-212.
+- The score interval used to qualify per-family recall, where sample sizes fall
+as low as a few dozen flows.
 """
     _write("Final_Project_Report.md", body)
 
@@ -723,12 +779,12 @@ names the repository evidence that satisfies the criterion.*
 |---|---|---|---|---|
 | **Problem Understanding & Framing** | 10 | Security problem and data-science objective defined; task type identified as binary classification; **seven pre-registered measurable success criteria (T1-T7) plus seven methodological criteria (M1-M7)**; business/security risks, cost asymmetry, concept drift and adversarial adaptation analysed; explicit lifecycle mapping table | `reports/problem_statement.md` §1-§9 | Complete |
 | **Data Collection & Understanding** | 10 | High-quality public dataset (UNSW-NB15) with full citation and DOI; programmatic acquisition with **independent integrity verification** (row counts, schema, target encoding, SHA-256); complete summary of rows, columns, types, target, missingness, duplicates and class distribution; **{len(_data_dictionary_rows())}-entry data dictionary** covering published and engineered features; four data-quality defects documented | `reports/dataset_documentation.md`, `reports/data_dictionary.csv`, `src/data_loader.py`, `notebooks/01_problem_data_understanding.ipynb` | Complete |
-| **Data Preprocessing, EDA & Feature Engineering** | 10 | Missing values and duplicates analysed and handled (dedup **before** split); outliers analysed and deliberately retained with justification; **{len(figures)} figures** with written interpretations; categorical encoding with infrequent-category pooling; log1p + standard scaling; class imbalance analysed in production context; **{len(ENGINEERED_FEATURE_DOCS)} engineered security features**, each documented; feature importance via univariate ranking and SHAP; target leakage prevented at a single enforcement point; every decision justified in a table | `reports/EDA_Feature_Engineering_Report.md`, `src/eda.py`, `src/features.py`, `src/preprocessing.py`, `notebooks/02`, `notebooks/03`, `figures/fig01`-`fig13` | Complete |
-| **Model Implementation & Comparison** | 20 | **Five models**: Logistic Regression, Random Forest, XGBoost (all required), plus LightGBM and Isolation Forest (optional); `RandomizedSearchCV` with 5-fold stratified CV; **nine required metrics** plus MCC, balanced accuracy and Brier score; confusion matrices, ROC and PR curves, comparison charts; training and inference time recorded; **model selected on PR-AUC, explicitly not accuracy**, with reasoning; `random_state=42` throughout; **{n_ablations} ablation experiments** isolating duplication, TTL artefact, engineered features, SMOTE and the published split | `reports/Model_Evaluation_Report.md`, `src/train.py`, `src/evaluate.py`, `reports/metrics/*.csv`, `notebooks/04`, `notebooks/05`, `figures/fig14`-`fig19` | Complete |
-| **Critical Thinking, Ethical AI & Bias Auditing** | 20 | SHAP global importance, beeswarm, dependence and **four local explanations** (TP/TN/FP/FN); **artefact diagnostic quantifying reliance on the TTL family**; limitations enumerated with mitigations; leakage, imbalance, overfitting and concept drift each addressed with evidence; systematic error analysis by family, service, protocol and state; **operational subgroup audit with explicit statement that no demographic fairness claim is possible** and why; deployment-time fairness risks identified separately; mitigation table split into implemented vs required-before-deployment | `reports/Bias_Fairness_Analysis.md`, `src/explain.py`, `reports/metrics/subgroup_audit_main.csv`, `notebooks/06`, `figures/fig20`-`fig24` | Complete |
+| **Data Preprocessing, EDA & Feature Engineering** | 10 | Missing values and duplicates analysed and handled (each partition deduplicated **before** splitting, plus train/test overlap removal); outliers analysed and deliberately retained with justification; **{len(figures)} figures** with written interpretations; categorical encoding with infrequent-category pooling; log1p + standard scaling; class imbalance analysed in production context; **{len(ENGINEERED_FEATURE_DOCS)} engineered security features**, each documented; **feature selection (mutual-information filter) and dimensionality reduction (PCA at 95% variance)**, both fitted on training data only and reported as a supplement; feature importance via univariate ranking and SHAP; target leakage prevented at a single enforcement point | `reports/EDA_Feature_Engineering_Report.md`, `src/eda.py`, `src/features.py`, `src/feature_analysis.py`, `src/preprocessing.py`, `notebooks/02`, `notebooks/03`, `figures/fig01`-`fig13` | Complete |
+| **Model Implementation & Comparison** | 20 | **Five models**: Logistic Regression, Random Forest, XGBoost (all required), plus LightGBM and Isolation Forest (optional); `RandomizedSearchCV` with 5-fold stratified CV; **nine required metrics** plus MCC, balanced accuracy and Brier score; confusion matrices, ROC and PR curves, comparison charts; training and inference time recorded; **model selected on PR-AUC, explicitly not accuracy**, with reasoning; `random_state=42` throughout; **headline results measured on the authors' published partition**, not a random split; **{n_ablations} ablation experiments** isolating the split protocol, duplication, the TTL artefact, engineered features and SMOTE | `reports/Model_Evaluation_Report.md`, `src/train.py`, `src/evaluate.py`, `reports/metrics/*.csv`, `notebooks/04`, `notebooks/05`, `figures/fig14`-`fig19` | Complete |
+| **Critical Thinking, Ethical AI & Bias Auditing** | 20 | SHAP global importance, beeswarm, dependence and **four local explanations** (TP/TN/FP/FN); **artefact diagnostic quantifying reliance on the TTL family**; limitations enumerated with mitigations; leakage, imbalance, overfitting and concept drift each addressed with evidence; systematic error analysis by family, service, protocol and state; **operational subgroup audit with explicit statement that no demographic fairness claim is possible** and why; **per-group recall reported with 95% Wilson confidence intervals**, so small families are not over-read; deployment-time fairness risks identified separately; mitigation table split into implemented vs required-before-deployment; **a declared deviation from pre-registration** where the primary protocol was tightened after the targets were set | `reports/Bias_Fairness_Analysis.md`, `src/explain.py`, `reports/metrics/subgroup_audit_main.csv`, `reports/problem_statement.md` §4.2b, `notebooks/06`, `figures/fig20`-`fig24` | Complete |
 | **Final Presentation & Communication** | 10 | Technical deck (12 slides) and executive deck (10 slides), each slide with title, content, recommended visual and speaker notes; executive deck free of equations and code | `presentations/technical_presentation_content.md`, `presentations/executive_presentation_content.md` | Complete |
-| **GitHub Profile & Upload** | 15 | Professional README with all 15 required sections and a Mermaid architecture diagram; `requirements.txt`, `environment.yml`, `.gitignore`, MIT `LICENSE` with third-party data notice; complete directory structure (`notebooks/`, `src/`, `models/`, `data/`, `reports/`, `figures/`, `presentations/`, `app/`, `tests/`); **{len(notebooks)} executable notebooks**; importable `src` package; pytest suite | `README.md`, repository root | Complete |
-| **Bonus / Creativity** | 5 | Streamlit application with single-flow scoring, batch upload, live threshold control and per-alert SHAP explanation; Mermaid architecture diagram; {len(figures)} publication-quality colour-blind-safe figures; risk-banded output with recommended actions; **documented Generative AI usage**; **{n_ablations}-condition ablation study**; unsupervised Isolation Forest comparison; cost-sensitive threshold analysis with sensitivity table | `app/streamlit_app.py`, `reports/Generative_AI_Usage.md`, `figures/`, `reports/Model_Evaluation_Report.md` §8, §11 | Complete |
+| **GitHub Profile & Upload** | 15 | Professional README with all 15 required sections and a Mermaid architecture diagram; `requirements.txt`, `environment.yml`, `.gitignore`, MIT `LICENSE` with third-party data notice; complete directory structure (`notebooks/`, `src/`, `models/`, `data/`, `reports/`, `figures/`, `presentations/`, `app/`, `scripts/`, `tests/`); **{len(notebooks)} executable notebooks**; importable `src` package; pytest suite; **CI on Python 3.11 and 3.13** running the suite and an independent artefact verifier; `requirements-lock.txt` pinning the exact versions that produced these results | `README.md`, `.github/workflows/tests.yml`, repository root | Complete |
+| **Bonus / Creativity** | 5 | Streamlit application with single-flow scoring, batch upload, live threshold control and per-alert SHAP explanation; Mermaid architecture diagram; {len(figures)} publication-quality colour-blind-safe figures; risk-banded output with recommended actions; **documented Generative AI usage**; **{n_ablations}-condition ablation study**; unsupervised Isolation Forest comparison; cost-sensitive threshold analysis with sensitivity table; **an independent artefact verifier** that recomputes the headline metrics from the saved model and checks figure, notebook, deck and link integrity | `app/streamlit_app.py`, `reports/Generative_AI_Usage.md`, `scripts/verify_project.py`, `reports/metrics/artifact_verification.json`, `figures/`, `reports/Model_Evaluation_Report.md` §8, §11 | Complete |
 | **TOTAL** | **100** | | | |
 
 ---

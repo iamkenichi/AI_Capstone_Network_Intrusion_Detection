@@ -57,6 +57,67 @@ def _num(value: float | None, digits: int = 4) -> str:
     return "n/a" if value is None or pd.isna(value) else f"{value:.{digits}f}"
 
 
+def describe_feature_selection(table, details: dict | None) -> str:
+    """Read the feature-selection / PCA table, from the measured values.
+
+    Computed rather than written because the interesting outcome - whether a
+    20-feature filter or a PCA projection loses anything worth keeping - is not
+    knowable in advance, and a fixed narrative would end up asserting whichever
+    answer was true the first time it ran.
+    """
+    if table is None or details is None or table.empty:
+        return ("_Run `python -m src.feature_analysis` to populate this section._")
+
+    indexed = table.set_index("method")
+    baseline_key = next((m for m in indexed.index if m.startswith("All features")), None)
+    if baseline_key is None:
+        return MISSING
+    baseline = indexed.loc[baseline_key]
+    parts: list[str] = []
+
+    filters = [m for m in indexed.index if m.startswith("Mutual information")]
+    if filters:
+        best_filter = max(filters, key=lambda m: indexed.loc[m, "pr_auc"])
+        row = indexed.loc[best_filter]
+        delta = row["pr_auc"] - baseline["pr_auc"]
+        # A filter that loses <0.01 PR-AUC has, for practical purposes, lost nothing.
+        verdict = ("recovers essentially all of it" if abs(delta) < 0.01
+                   else "loses a measurable amount" if delta < 0 else "improves on it")
+        parts.append(
+            f"**Feature selection.** The full encoded matrix has "
+            f"{int(baseline['n_features'])} columns and reaches PR-AUC "
+            f"{baseline['pr_auc']:.4f} under the linear probe. Ranking by mutual information "
+            f"and keeping the top {int(row['n_features'])} {verdict} "
+            f"({row['pr_auc']:.4f}, {delta:+.4f}). Mutual information is a *filter* method: it "
+            "scores each feature against the target without reference to any estimator, which "
+            "makes it an independent check on the SHAP ranking rather than a restatement of it.")
+
+    pca_key = next((m for m in indexed.index if m.startswith("PCA")), None)
+    if pca_key is not None:
+        row = indexed.loc[pca_key]
+        delta = row["pr_auc"] - baseline["pr_auc"]
+        pca = details.get("pca", {})
+        parts.append(
+            f"**Dimensionality reduction.** PCA needs "
+            f"{pca.get('components_retained', int(row['n_features']))} components to retain "
+            f"{pca.get('variance_target', 0.95):.0%} of the variance - against "
+            f"{int(baseline['n_features'])} encoded columns - and scores PR-AUC "
+            f"{row['pr_auc']:.4f} ({delta:+.4f} against the baseline). "
+            + ("The width of the encoded matrix is therefore largely real rather than "
+               "redundant: one-hot columns for protocol, service and state are sparse but not "
+               "mutually predictable."
+               if pca.get("components_retained", 0) > 0.5 * int(baseline["n_features"])
+               else "A substantial part of the encoded width is therefore redundant."))
+
+    parts.append(
+        "**Neither is used in the deployed model.** PCA components are linear blends of the "
+        "original fields, and an analyst cannot act on 'component 7 was high' the way they can "
+        "act on 'no destination response and an unusual source TTL'. In a detection system whose "
+        "output a human has to triage, that interpretability is worth more than the dimensionality "
+        "saving - so the deployed pipeline keeps the named features and uses SHAP to explain them.")
+    return "\n\n".join(parts)
+
+
 def describe_error_confidence(errors: dict | None, threshold: float) -> str:
     """
     Describe *how* the model is wrong, derived from the measured score
@@ -611,19 +672,22 @@ def generate_model_report() -> None:
     ablation_rows = ""
     if ablations is not None and best in ablations.index.get_level_values(1):
         sub = ablations.xs(best, level=1)
-        pretty = {
-            "main": "Primary protocol (headline result)",
-            "keep_duplicates": "Duplicates retained",
-            "no_ttl": "TTL features removed",
-            "no_engineered": "Engineered features removed",
-            "smote": "SMOTE instead of class weights",
-            "official_split": "Authors' published train/test split",
-        }
+        from src.train import ABLATION_LABELS as pretty
         ablation_rows = "\n".join(
             f"| {pretty.get(name, name)} | {sub.loc[name, 'recall']:.4f} | "
             f"{sub.loc[name, 'precision']:.4f} | {sub.loc[name, 'f1']:.4f} | "
             f"{sub.loc[name, 'pr_auc']:.4f} | {sub.loc[name, 'false_negative_rate']:.3%} |"
             for name in sub.index)
+
+    selection = _csv("feature_selection_pca", index_col=None)
+    selection_details = _json("feature_selection_pca")
+    selection_rows = ""
+    if selection is not None:
+        selection_rows = "\n".join(
+            f"| {r['method']} | {int(r['n_features'])} | {r['f1']:.4f} | "
+            f"{r['roc_auc']:.4f} | {r['pr_auc']:.4f} |"
+            for _, r in selection.iterrows())
+    selection_reading = describe_feature_selection(selection, selection_details)
 
     targets = [
         ("T1", "F1 >= 0.90", row["f1"], 0.90),
@@ -821,6 +885,26 @@ time.
 These are the rows that decide how much the headline result means. See
 `figures/fig19_ablation_comparison.png` and the interpretation in
 `reports/Final_Project_Report.md` §12.
+
+---
+
+## 11b. Feature selection and dimensionality reduction
+
+A filter-based selection method and a dimensionality-reduction method, run as a
+**supplement** rather than as part of model selection. Both are fitted on the
+training split and scored on validation; the test split is not touched, so
+nothing here can retro-fit the headline result. The probe is a plain logistic
+regression - the question is how much signal survives each transformation, not
+how good the transformed model can be made.
+
+| Method | Features | F1 | ROC-AUC | PR-AUC |
+|---|---|---|---|---|
+{selection_rows or MISSING}
+
+{selection_reading}
+
+Generated by `python -m src.feature_analysis`; raw values in
+`reports/metrics/feature_selection_pca.csv` and `.json`.
 
 ---
 
