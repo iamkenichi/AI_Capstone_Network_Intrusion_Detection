@@ -1,0 +1,15 @@
+# Normalise line endings in the repository to LF regardless of the platform the
+# commit was made on, so a checkout on Windows and one on Linux produce the same
+# file hashes and the CI job does not see spurious diffs.
+* text=auto eol=lf
+
+# Binary: never touched, never diffed as text.
+*.png binary
+*.pptx binary
+*.docx binary
+*.joblib binary
+*.parquet binary
+
+# Notebooks carry executed outputs; a merge driver would corrupt the JSON, so
+# conflicts are resolved by re-running `python -m src.make_notebooks --execute`.
+*.ipynb -merge linguist-documentation

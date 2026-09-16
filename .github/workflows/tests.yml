@@ -1,12 +1,56 @@
-name: Pipeline tests
-on: [push, pull_request]
+name: tests
+
+on:
+  push:
+    branches: [main, v2-rebuild]
+  pull_request:
+
 jobs:
-  tests:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.13']
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
-      - run: python -m pip install -r requirements.txt
-      - run: python -m pytest
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Check every module imports
+        # Catches syntax errors and broken imports in modules the test suite does
+        # not touch on a checkout without data (src.pipeline, src.train, ...).
+        run: |
+          python -c "
+          import importlib, pkgutil, sys
+          import src
+          failed = []
+          for module in pkgutil.iter_modules(src.__path__, 'src.'):
+              try:
+                  importlib.import_module(module.name)
+              except Exception as exc:
+                  failed.append(f'{module.name}: {type(exc).__name__}: {exc}')
+          print('\n'.join(failed) or 'all modules import cleanly')
+          sys.exit(1 if failed else 0)
+          "
+
+      - name: Run tests
+        # The dataset and the trained models are not committed, so the tests that
+        # need them skip themselves. What runs here is the leakage-control,
+        # feature-engineering and input-validation suite.
+        run: python -m pytest
+
+      - name: Verify committed artefacts
+        # Checks the artefacts in the repository against what the reports claim:
+        # figure integrity, notebook execution, deck slide counts, README links,
+        # model feature schema. The data- and model-dependent checks skip here.
+        run: python scripts/verify_project.py

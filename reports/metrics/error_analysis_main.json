@@ -1,0 +1,113 @@
+{
+  "threshold": 0.465,
+  "counts": {
+    "true_negative": 24662,
+    "true_positive": 18231,
+    "false_positive": 9000,
+    "false_negative": 751
+  },
+  "false_negatives_by_attack_cat": {
+    "Fuzzers": 687,
+    "Exploits": 47,
+    "Analysis": 8,
+    "Shellcode": 3,
+    "DoS": 3,
+    "Reconnaissance": 3
+  },
+  "false_negative_rate_by_attack_cat": {
+    "Analysis": 0.0272,
+    "Backdoor": 0.0,
+    "DoS": 0.0025,
+    "Exploits": 0.0066,
+    "Fuzzers": 0.1585,
+    "Generic": 0.0,
+    "Reconnaissance": 0.0013,
+    "Shellcode": 0.0082,
+    "Worms": 0.0
+  },
+  "false_positives_by_service": {
+    "-": 7465,
+    "http": 1221,
+    "ftp": 311,
+    "radius": 2,
+    "dns": 1
+  },
+  "false_positive_rate_by_service": {
+    "-": 0.306,
+    "dns": 0.0003,
+    "ftp": 0.413,
+    "ftp-data": 0.0,
+    "http": 0.3266,
+    "radius": 1.0,
+    "smtp": 0.0,
+    "ssh": 0.0
+  },
+  "false_positives_by_proto": {
+    "tcp": 6940,
+    "udp": 2047,
+    "igmp": 13
+  },
+  "false_positives_by_state": {
+    "fin": 6933,
+    "int": 2051,
+    "req": 10,
+    "con": 5,
+    "rst": 1
+  },
+  "false_negative_score_stats": {
+    "mean": 0.2535,
+    "median": 0.268,
+    "share_below_0.10": 0.1651
+  },
+  "false_positive_score_stats": {
+    "mean": 0.8088,
+    "median": 0.8514,
+    "share_above_0.90": 0.4086
+  },
+  "median_profile_by_outcome": {
+    "false_negative": {
+      "dur": 0.436,
+      "sbytes": 680.0,
+      "dbytes": 268.0,
+      "spkts": 10.0,
+      "dpkts": 6.0,
+      "sttl": 254.0,
+      "dttl": 252.0,
+      "rate": 42.801,
+      "smean": 63.0
+    },
+    "false_positive": {
+      "dur": 0.727,
+      "sbytes": 798.0,
+      "dbytes": 354.0,
+      "spkts": 10.0,
+      "dpkts": 8.0,
+      "sttl": 254.0,
+      "dttl": 252.0,
+      "rate": 25.862,
+      "smean": 80.0
+    },
+    "true_negative": {
+      "dur": 0.08,
+      "sbytes": 1064.0,
+      "dbytes": 850.0,
+      "spkts": 10.0,
+      "dpkts": 10.0,
+      "sttl": 31.0,
+      "dttl": 29.0,
+      "rate": 1048.959,
+      "smean": 73.0
+    },
+    "true_positive": {
+      "dur": 0.572,
+      "sbytes": 838.0,
+      "dbytes": 354.0,
+      "spkts": 10.0,
+      "dpkts": 8.0,
+      "sttl": 254.0,
+      "dttl": 252.0,
+      "rate": 46.398,
+      "smean": 81.0
+    }
+  }
+}

@@ -1,0 +1,406 @@
+{
+  "model": "LightGBM",
+  "sample_size": 4000,
+  "global_importance": [
+    {
+      "feature": "sttl",
+      "mean_abs_shap": 5.750973,
+      "mean_shap": 0.738566,
+      "max_abs_shap": 8.668646,
+      "share_of_total": 0.382628
+    },
+    {
+      "feature": "ct_state_ttl",
+      "mean_abs_shap": 1.708752,
+      "mean_shap": -0.463104,
+      "max_abs_shap": 3.406383,
+      "share_of_total": 0.113688
+    },
+    {
+      "feature": "ct_srv_dst",
+      "mean_abs_shap": 0.768392,
+      "mean_shap": -0.274485,
+      "max_abs_shap": 3.629153,
+      "share_of_total": 0.051123
+    },
+    {
+      "feature": "ct_dst_src_ltm",
+      "mean_abs_shap": 0.648967,
+      "mean_shap": 0.072253,
+      "max_abs_shap": 1.987055,
+      "share_of_total": 0.043178
+    },
+    {
+      "feature": "dttl",
+      "mean_abs_shap": 0.536727,
+      "mean_shap": 0.47557,
+      "max_abs_shap": 3.378436,
+      "share_of_total": 0.03571
+    },
+    {
+      "feature": "ct_srv_src",
+      "mean_abs_shap": 0.421668,
+      "mean_shap": -0.137157,
+      "max_abs_shap": 4.816529,
+      "share_of_total": 0.028055
+    },
+    {
+      "feature": "service_dns",
+      "mean_abs_shap": 0.377555,
+      "mean_shap": 0.055607,
+      "max_abs_shap": 3.996509,
+      "share_of_total": 0.02512
+    },
+    {
+      "feature": "dmean",
+      "mean_abs_shap": 0.335852,
+      "mean_shap": -0.053106,
+      "max_abs_shap": 1.523785,
+      "share_of_total": 0.022345
+    },
+    {
+      "feature": "dbytes",
+      "mean_abs_shap": 0.304166,
+      "mean_shap": 0.047348,
+      "max_abs_shap": 2.052,
+      "share_of_total": 0.020237
+    },
+    {
+      "feature": "ct_dst_sport_ltm",
+      "mean_abs_shap": 0.27124,
+      "mean_shap": 0.049527,
+      "max_abs_shap": 3.718153,
+      "share_of_total": 0.018046
+    },
+    {
+      "feature": "dload",
+      "mean_abs_shap": 0.259853,
+      "mean_shap": 0.055258,
+      "max_abs_shap": 0.915929,
+      "share_of_total": 0.017289
+    },
+    {
+      "feature": "smean",
+      "mean_abs_shap": 0.220298,
+      "mean_shap": -0.059095,
+      "max_abs_shap": 2.148016,
+      "share_of_total": 0.014657
+    },
+    {
+      "feature": "sbytes",
+      "mean_abs_shap": 0.200571,
+      "mean_shap": -0.039979,
+      "max_abs_shap": 1.355741,
+      "share_of_total": 0.013345
+    },
+    {
+      "feature": "dloss",
+      "mean_abs_shap": 0.196065,
+      "mean_shap": -0.092735,
+      "max_abs_shap": 0.955669,
+      "share_of_total": 0.013045
+    },
+    {
+      "feature": "bytes_per_packet",
+      "mean_abs_shap": 0.191177,
+      "mean_shap": -0.068868,
+      "max_abs_shap": 1.778122,
+      "share_of_total": 0.01272
+    },
+    {
+      "feature": "ct_dst_ltm",
+      "mean_abs_shap": 0.140558,
+      "mean_shap": 0.0638,
+      "max_abs_shap": 2.698703,
+      "share_of_total": 0.009352
+    },
+    {
+      "feature": "ct_src_ltm",
+      "mean_abs_shap": 0.136952,
+      "mean_shap": 0.003154,
+      "max_abs_shap": 2.580714,
+      "share_of_total": 0.009112
+    },
+    {
+      "feature": "stcpb",
+      "mean_abs_shap": 0.135225,
+      "mean_shap": 0.032841,
+      "max_abs_shap": 0.780932,
+      "share_of_total": 0.008997
+    },
+    {
+      "feature": "dtcpb",
+      "mean_abs_shap": 0.133143,
+      "mean_shap": -0.042962,
+      "max_abs_shap": 0.905506,
+      "share_of_total": 0.008858
+    },
+    {
+      "feature": "tcprtt",
+      "mean_abs_shap": 0.132181,
+      "mean_shap": 0.066846,
+      "max_abs_shap": 1.332439,
+      "share_of_total": 0.008794
+    },
+    {
+      "feature": "src_loss_rate",
+      "mean_abs_shap": 0.117401,
+      "mean_shap": -0.00504,
+      "max_abs_shap": 2.269032,
+      "share_of_total": 0.007811
+    },
+    {
+      "feature": "dur",
+      "mean_abs_shap": 0.116673,
+      "mean_shap": -0.002586,
+      "max_abs_shap": 0.699142,
+      "share_of_total": 0.007763
+    },
+    {
+      "feature": "load_log_ratio",
+      "mean_abs_shap": 0.114373,
+      "mean_shap": -0.057632,
+      "max_abs_shap": 0.959132,
+      "share_of_total": 0.00761
+    },
+    {
+      "feature": "djit",
+      "mean_abs_shap": 0.112708,
+      "mean_shap": -0.039244,
+      "max_abs_shap": 0.766893,
+      "share_of_total": 0.007499
+    },
+    {
+      "feature": "ackdat",
+      "mean_abs_shap": 0.111892,
+      "mean_shap": 0.051021,
+      "max_abs_shap": 0.740141,
+      "share_of_total": 0.007444
+    }
+  ],
+  "artifact_diagnostic": {
+    "impact_share_by_group": {
+      "TTL family\n(sttl, dttl, ct_state_ttl)": 0.532,
+      "Connection counters\n(ct_*, excl. ct_state_ttl)": 0.1651,
+      "Volume & rate\n(bytes, packets, load)": 0.125,
+      "Timing & TCP state": 0.0716,
+      "Engineered in this project": 0.0653,
+      "Categorical\n(proto, service, state)": 0.0489
+    },
+    "ttl_family_share": 0.532
+  },
+  "local_cases": {
+    "True positive (attack correctly detected)": {
+      "test_row_position": 32858,
+      "attack_score": 0.999843,
+      "true_label": 1,
+      "predicted": 1,
+      "attack_cat": "Analysis",
+      "proto": "unas",
+      "service": "-",
+      "state": "int",
+      "base_value": -2.020719,
+      "top_contributions": [
+        {
+          "feature": "sttl",
+          "shap": 5.22287,
+          "value": 1.09968
+        },
+        {
+          "feature": "proto_unas",
+          "shap": 1.75961,
+          "value": 1.0
+        },
+        {
+          "feature": "ct_state_ttl",
+          "shap": 1.74297,
+          "value": 1.42034
+        },
+        {
+          "feature": "ct_dst_sport_ltm",
+          "shap": 1.71683,
+          "value": 0.28812
+        },
+        {
+          "feature": "ct_srv_dst",
+          "shap": -1.4465,
+          "value": 0.6636
+        },
+        {
+          "feature": "ct_dst_src_ltm",
+          "shap": -0.76365,
+          "value": -0.14802
+        },
+        {
+          "feature": "sload",
+          "shap": 0.48871,
+          "value": 1.9133
+        },
+        {
+          "feature": "sbytes",
+          "shap": 0.44512,
+          "value": -1.11877
+        }
+      ]
+    },
+    "True negative (benign correctly cleared)": {
+      "test_row_position": 14899,
+      "attack_score": 4e-06,
+      "true_label": 0,
+      "predicted": 0,
+      "attack_cat": "Normal",
+      "proto": "tcp",
+      "service": "-",
+      "state": "fin",
+      "base_value": -2.020719,
+      "top_contributions": [
+        {
+          "feature": "sttl",
+          "shap": -7.58309,
+          "value": -0.97795
+        },
+        {
+          "feature": "ct_state_ttl",
+          "shap": -2.83867,
+          "value": -0.94734
+        },
+        {
+          "feature": "ct_srv_src",
+          "shap": -0.73559,
+          "value": 0.60422
+        },
+        {
+          "feature": "dmean",
+          "shap": 0.44138,
+          "value": 0.30938
+        },
+        {
+          "feature": "sbytes",
+          "shap": -0.29999,
+          "value": 0.7313
+        },
+        {
+          "feature": "dbytes",
+          "shap": 0.25837,
+          "value": 0.49049
+        },
+        {
+          "feature": "ct_dst_src_ltm",
+          "shap": -0.25426,
+          "value": -0.30781
+        },
+        {
+          "feature": "jit_log_ratio",
+          "shap": 0.21601,
+          "value": 0.90055
+        }
+      ]
+    },
+    "False positive (benign wrongly alerted)": {
+      "test_row_position": 25764,
+      "attack_score": 0.851472,
+      "true_label": 0,
+      "predicted": 1,
+      "attack_cat": "Normal",
+      "proto": "tcp",
+      "service": "http",
+      "state": "fin",
+      "base_value": -2.020719,
+      "top_contributions": [
+        {
+          "feature": "sttl",
+          "shap": 4.54911,
+          "value": -0.68913
+        },
+        {
+          "feature": "dttl",
+          "shap": 0.95257,
+          "value": 1.06455
+        },
+        {
+          "feature": "ct_state_ttl",
+          "shap": 0.8403,
+          "value": 0.2365
+        },
+        {
+          "feature": "ct_dst_ltm",
+          "shap": 0.52363,
+          "value": 0.69323
+        },
+        {
+          "feature": "ct_srv_dst",
+          "shap": -0.50522,
+          "value": -0.43806
+        },
+        {
+          "feature": "ct_dst_src_ltm",
+          "shap": -0.50504,
+          "value": -0.30781
+        },
+        {
+          "feature": "dbytes",
+          "shap": -0.48995,
+          "value": 0.23051
+        },
+        {
+          "feature": "load_log_ratio",
+          "shap": -0.45051,
+          "value": -0.42534
+        }
+      ]
+    },
+    "False negative (attack missed)": {
+      "test_row_position": 531,
+      "attack_score": 0.26803,
+      "true_label": 1,
+      "predicted": 0,
+      "attack_cat": "Fuzzers",
+      "proto": "tcp",
+      "service": "-",
+      "state": "fin",
+      "base_value": -2.020719,
+      "top_contributions": [
+        {
+          "feature": "sttl",
+          "shap": 4.39706,
+          "value": 1.09968
+        },
+        {
+          "feature": "ct_srv_dst",
+          "shap": -1.81477,
+          "value": 0.34884
+        },
+        {
+          "feature": "dttl",
+          "shap": 0.94334,
+          "value": 1.06455
+        },
+        {
+          "feature": "ct_srv_src",
+          "shap": -0.78939,
+          "value": 0.29344
+        },
+        {
+          "feature": "ct_dst_src_ltm",
+          "shap": -0.69248,
+          "value": 0.49114
+        },
+        {
+          "feature": "ct_state_ttl",
+          "shap": 0.55705,
+          "value": 0.2365
+        },
+        {
+          "feature": "dmean",
+          "shap": -0.43996,
+          "value": -0.1634
+        },
+        {
+          "feature": "dload",
+          "shap": 0.36069,
+          "value": -0.22939
+        }
+      ]
+    }
+  }
+}

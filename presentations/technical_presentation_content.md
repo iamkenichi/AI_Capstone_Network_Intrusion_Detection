@@ -1,194 +1,211 @@
-# Technical presentation content
+# Technical Presentation
 
-12 slides. Metrics come from the executed run; source files are named below.
+**Machine Learning-Based Network Intrusion Detection and Anomaly Classification**
 
-## Slide 1 — Network intrusion detection
+*Audience: ML / data-science / cybersecurity peers · 12 slides · ~20 minutes*
+*Generated 2026-09-16 from `reports/metrics/`.*
 
-### Main content
+---
 
+## Slide 1 — Title
+
+**Content**
 - Machine Learning-Based Network Intrusion Detection and Anomaly Classification
-- UNSW-NB15 · Binary supervised classification
+- Binary classification of network flows: benign vs. malicious
+- Dataset: UNSW-NB15 (257,673 flow records, 10 attack families)
+- Selected model: **LightGBM** — F1 0.7890, recall 96.04%, PR-AUC 0.9485
 
-### Recommended visual
+**Recommended visual:** Title slide with the architecture diagram from README.md as a faded background.
 
-Project title and concise workflow
+**Speaker notes:** Open with the finding, not the setup. "We built a flow-based intrusion detector that meets every performance target we set in advance — and then we spent most of our effort working out how much of that number is real. That second part is what I actually want to talk about."
 
-### Speaker notes
+---
 
-Introduce the research question and distinguish binary detection from attack-family classification.
+## Slide 2 — Problem & Objectives
 
-## Slide 2 — Problem and objectives
+**Content**
+- Enterprise networks produce tens of millions of flow records per day; the malicious fraction is vanishingly small
+- Signatures are precise but blind to anything unseen; manual review does not scale
+- **Objective:** estimate P(malicious) per flow from flow statistics alone — no payload, no IPs, no ports, no timestamps
+- Pre-registered targets: F1 ≥ 0.90, ROC-AUC ≥ 0.95, PR-AUC ≥ 0.90, recall ≥ 0.90, throughput ≥ 10k flows/s
+- Pre-registered **methodological** criteria: no target leakage, no preprocessing leakage, no duplicate leakage, test split opened once
 
-### Main content
+**Recommended visual:** Two-column slide — left: the SOC funnel (10M flows → alerts → analysts); right: the targets table.
 
-- Prioritize suspicious flows for SOC analysts.
-- Research targets: F1 >= 0.90; ROC-AUC >= 0.95.
-- Report missed attacks and false-alert burden.
+**Speaker notes:** Stress that targets were set *before* modelling. That is what makes the evaluation a test rather than a description. Note that the methodological criteria are as binding as the numerical ones.
 
-### Recommended visual
+---
 
-False-positive versus false-negative decision table
+## Slide 3 — Dataset
 
-### Speaker notes
+**Content**
+- UNSW-NB15 (Moustafa & Slay, 2015), UNSW Canberra ACCS — synthetic testbed traffic, IXIA PerfectStorm
+- 257,673 records, 45 columns, 10 attack families; target `label`, family label `attack_cat`
+- Integrity verified independently: row counts, schema, target encoding, SHA-256 — not trusted from the mirror
+- **`attack_cat` excluded as a predictor** — it determines `label` exactly (verified 1.0000 agreement)
+- Missing values: **0**. But `service == '-'` (54.8%) and `dbytes == 0` (46.7%) are real categories, not absences
 
-Targets are provisional and are assessed against executed evidence. A flow alert is not an incident.
+**Recommended visual:** `figures/fig02_attack_category_distribution.png`
 
-## Slide 3 — Dataset and evaluation population
+**Speaker notes:** The three-orders-of-magnitude spread across families is why every per-family metric is reported with its sample count. Point out that "no missing values" is not the same as "nothing is absent."
 
-### Main content
+---
 
-- UNSW-NB15: 175,341 training and 82,332 published test rows.
-- Documented mirror; source filenames were reversed.
-- Development and primary test deduplicated; overlaps excluded.
+## Slide 4 — EDA: three findings that changed the design
 
-### Recommended visual
+**Content**
+1. **40.4% of the corpus is duplicated**, and duplication is class-correlated — Generic 87.6%, Normal 8.1%
+2. **`sttl` is a near-label proxy** — a lookup rule on it alone reaches 81.3% accuracy vs a 55.6% baseline
+3. **Outliers are genuine attacks** — 14 MB transfers, 5.99 Gbit/s loads, 10,646-packet bursts. Nothing was clipped
 
-reports/dataset_summary.csv
+**Recommended visual:** `figures/fig05_ttl_artifact.png` (three panels) with `figures/fig03_duplication_by_attack_category.png` inset.
 
-### Speaker notes
+**Speaker notes:** This is the heart of the talk. The testbed ran benign and attack generators on hosts with different initial TTLs, so `sttl` encodes *which generator* produced the flow. Anyone benchmarking on UNSW-NB15 without noticing this is reporting a partly meaningless number. Emphasise that finding 1 and finding 2 both *changed what we built*, not just what we wrote.
 
-Explain the provenance limitation and show split_manifest.json. Do not equate cleaned test results with an untouched published split. Source: https://research.unsw.edu.au/projects/unsw-nb15-dataset
+---
 
-## Slide 4 — Training-data EDA
+## Slide 5 — Preprocessing & Feature Engineering
 
-### Main content
+**Content**
+- **Deduplicate before splitting** → 153,684 unique flows; class balance shifts 63.9% → 44.4% attack
+- Stratified 60/20/20 on `attack_cat` (so Worms reaches all three splits), `random_state=42`
+- `log1p` → `StandardScaler` for heavy tails; one-hot with `min_frequency=200` for the 133-level `proto`
+- **15 engineered features**, all row-wise: `src_byte_ratio`, `is_one_way`, `tcp_handshake_complete`, `load_log_ratio`, …
+- Row-wise matters twice: cannot leak across the split, **and** computable by a sensor on one flow
 
-- Compare class balance and attack categories.
-- Examine traffic volume, timing and protocol associations.
-- Retain plausible extremes as potential signals.
+**Recommended visual:** `figures/fig10_engineered_feature_separation.png`
 
-### Recommended visual
+**Speaker notes:** Everything sits inside one `Pipeline`, so CV re-fits the scaler and encoder per fold — leakage is structurally impossible rather than prevented by discipline. 46.7% of flows have zero destination packets, so every ratio is `a/(a+b)`, not `a/b`.
 
-figures/feature_distributions.png
+---
 
-### Speaker notes
+## Slide 6 — Modelling Approach
 
-All exploratory plots use development training data. Log transforms in plots aid reading; numeric model inputs are standardized without a log transform.
+**Content**
+- Logistic Regression (interpretable baseline) · Random Forest · XGBoost · LightGBM · Isolation Forest (unsupervised, benign-only)
+- `RandomizedSearchCV`, 5-fold `StratifiedKFold`, scoring F1 with PR-AUC and ROC-AUC alongside
+- **Protocol order:** score on validation → select on validation → tune threshold on validation → freeze → open test **once**
+- Solver choice made by measurement: `lbfgs`/L2 3.6 s vs `saga`/L1 199.4 s (non-converged) for a 0.0004 F1 difference
 
-## Slide 5 — Preprocessing and feature engineering
+**Recommended visual:** Flowchart of the five-step protocol, with the test split greyed out until step 5.
 
-### Main content
+**Speaker notes:** The protocol order is the substance. Steps 1–4 never touch test data; step 5 changes no parameter. That is what makes the test metrics an estimate of generalisation rather than a number that was optimised toward.
 
-- Exclude id, label and attack_cat.
-- Train-fitted imputation, scaling and rare-category one-hot encoding.
-- Add volume, packet-size, directionality and rate features.
+---
 
-### Recommended visual
+## Slide 7 — Model Comparison
 
-Six formulas from reports/data_dictionary.csv
+**Content**
 
-### Speaker notes
+| Model | Recall | Precision | F1 | PR-AUC | FPR |
+|---|---|---|---|---|---|
+| Logistic Regression | 0.9517 | 0.5901 | 0.7285 | 0.8789 | 37.273% |
+| Random Forest | 0.9752 | 0.6784 | 0.8002 | 0.9493 | 26.068% |
+| XGBoost | 0.9622 | 0.6800 | 0.7968 | 0.9526 | 25.536% |
+| LightGBM | 0.9604 | 0.6695 | 0.7890 | 0.9485 | 26.736% |
+| Isolation Forest | 0.3265 | 0.5164 | 0.4001 | 0.5047 | 17.242% |
 
-Undefined ratios become missing and receive a training-fitted median. Explain the original-feature validation ablation and its limited scope.
+- Selected **LightGBM** on validation **PR-AUC — not accuracy**
+- Accuracy compresses every model into a narrow band on a 36%-positive corpus and rewards majority-class performance
 
-## Slide 6 — Modeling approach
+**Recommended visual:** `figures/fig16_model_comparison.png`
 
-### Main content
+**Speaker notes:** Note how close the tree ensembles are, and how far the Isolation Forest sits behind — that gap is what supervised labelling actually buys. If asked why not accuracy: PR-AUC measures ranking quality on the positive class, which is what survives a change of base rate.
 
-- Logistic Regression · Random Forest · XGBoost
-- Three-fold stratified CV; four sampled configurations per family.
-- Tune on 30,000 training rows; refit on full development training.
-
-### Recommended visual
-
-reports/validation_comparison.csv
-
-### Speaker notes
-
-Average precision is the selection score. Validation selects the family and operating threshold; test predictions occur after those decisions are frozen.
-
-## Slide 7 — Model comparison
-
-### Main content
-
-- Selected: XGBoost, threshold 0.49.
-- Test recall 97.20%; precision 68.07%.
-- F1 0.8007; ROC-AUC 0.9698; AP 0.9550.
-
-### Recommended visual
-
-figures/model_comparison.png
-
-### Speaker notes
-
-Show all model rows from model_comparison.csv. Training time includes tuning and refit. PR-AUC is implemented as average precision. Source: executed project outputs.
+---
 
 ## Slide 8 — Explainability
 
-### Main content
+**Content**
+- SHAP TreeExplainer: global importance, beeswarm, dependence, and four local cases (TP / TN / FP / FN)
+- Top drivers: `sttl`, `ct_state_ttl`, `ct_srv_dst`, `ct_dst_src_ltm`, `dttl`
+- **Toward ATTACK:** high source TTL, no destination response, no completed handshake, asymmetric direction
+- **Toward BENIGN:** completed handshake with sequence exchange, balanced bidirectional volume, identified service
+- **Artefact diagnostic:** the TTL family carries 53% of total attributed impact
 
-- Tree SHAP explains global and local predictions.
-- Leading absolute attributions: numeric__sttl, numeric__ct_state_ttl, numeric__ct_srv_dst, numeric__dbytes, numeric__ct_dst_src_ltm.
-- Inspect collection-environment proxies.
+**Recommended visual:** `figures/fig21_shap_beeswarm.png`, then `figures/fig24_shap_artifact_check.png`
 
-### Recommended visual
+**Speaker notes:** The dependence plot for `sttl` is a step, not a gradient — the model learned a near-binary switch. SHAP is what turned a suspicion from EDA into a measured quantity on the fitted model. Mention the dual-use point: the same explanation that helps a defender tells an attacker what to manipulate.
 
-figures/shap_beeswarm.png
+---
 
-### Speaker notes
+## Slide 9 — Error & Bias Analysis
 
-Positive SHAP pushes toward attack; negative pushes toward benign. Inspect TP, TN, FP and FN waterfalls. Attributions are not causal explanations.
+**Content**
+- Recall varies substantially by attack family; weakest: Fuzzers (84%), Analysis (97%), Shellcode (99%), Exploits (99%)
+- Three distinguishable mechanisms: **scarcity** (fixable with data), **behavioural overlap with benign traffic** (not fixable), **duplication-distorted training counts**
+- Missed attacks are **near-misses** — median score 0.27 against a 0.465 threshold, only 17% below 0.10, so the threshold is the dominant lever and borderline review genuinely helps
+- False alerts concentrate in specific services → actionable via per-service thresholds
+- **UNSW-NB15 has no demographic attributes.** This is an *operational* performance audit; no demographic fairness claim is made or possible
 
-## Slide 9 — Error and operational bias audit
+**Recommended visual:** `figures/fig18_subgroup_audit.png`
 
-### Main content
+**Speaker notes:** Be explicit about the fairness framing — it is a strength, not a hedge. Then note that genuine fairness risk does enter at deployment: uneven per-service FPR means uneven scrutiny of the humans behind those services.
 
-- 532 missed attack flows; 8,655 false alerts.
-- Lowest attack-category recall: Fuzzers.
-- Audit protocol, service, state and attack category.
+---
 
-### Recommended visual
+## Slide 10 — Ablations: what is the number actually measuring?
 
-reports/subgroup_audit.csv
+**Content**
 
-### Speaker notes
+| Experiment | Recall | F1 | PR-AUC |
+|---|---|---|---|
+| Primary protocol (published partition) | 0.9604 | 0.7890 | 0.9485 |
+| Pooled random split | 0.9022 | 0.9116 | 0.9793 |
+| Duplicates retained | 0.9516 | 0.9623 | 0.9959 |
+| TTL features removed | 0.9606 | 0.7801 | 0.9441 |
+| Engineered features removed | 0.9625 | 0.7925 | 0.9484 |
+| SMOTE instead of class weights | 0.9652 | 0.7863 | 0.9486 |
+| Published partition, as distributed | 0.9799 | 0.8907 | 0.9872 |
 
-Show support and Wilson recall intervals. FPR is undefined for attack-only groups. No demographic attributes are available and no demographic fairness claim is made.
+- **Pooled random split → F1 +0.1226.** The protocol most published results use. We report the harder published partition instead
+- **Duplicates retained → F1 +0.0507** (vs the pooled split)**.** Skipping deduplication hands back a better-looking number for no better model
+- **TTL removed → F1 -0.0089.** SHAP's top feature is *used far more than it is needed* — the model re-routes through correlated features
+- **No engineered features → F1 +0.0035.** The 15 domain features buy interpretability, not accuracy — reported as the negative result it is
+- **SMOTE → F1 -0.0027.** Tested rather than assumed, and not adopted
+- **Partition as distributed → F1 +0.1017.** What the two cleaning steps (dedup each side, remove train/test overlap) are worth
 
-## Slide 10 — Prototype deployment
+**Recommended visual:** `figures/fig19_ablation_comparison.png`
 
-### Main content
+**Speaker notes:** This slide separates "the model detects attacks" from "the model detects this dataset." Each row is a separate end-to-end experiment reusing the tuned hyper-parameters, so exactly one thing changes at a time.
 
-- Feature CSV → saved preprocessing/model → frozen threshold → analyst review
-- Streamlit accepts examples and uploaded flow features.
-- No live packet extraction or automatic blocking.
+---
 
-### Recommended visual
+## Slide 11 — Deployment Architecture & Threshold
 
-README architecture diagram
+**Content**
+- Flow collector → feature extraction → model → **risk-banded triage queue** → analyst → response
+- Operating threshold **0.465**, chosen on validation; a low-FPR alternative is published for capacity-limited SOCs
+- Cost assumption stated openly: 20:1 FN:FP, with a sensitivity table
+- Measured throughput: **82,396 flows/second** on one commodity CPU
+- Streamlit prototype: single-flow scoring, batch upload, live threshold control, per-alert SHAP
 
-### Speaker notes
+**Recommended visual:** `figures/fig17_threshold_analysis.png` plus a Streamlit screenshot.
 
-Model scores are uncalibrated. Match flow definitions and aggregation windows before any local shadow-mode trial.
+**Speaker notes:** 0.50 is a default, not an optimum. Show how the recall/FPR trade-off moves and make the point that choosing the operating point is a business decision about alert capacity, not a modelling decision.
 
-## Slide 11 — Limitations
+---
 
-### Main content
+## Slide 12 — Limitations & Conclusions
 
-- Historical controlled collection and possible topology shortcuts.
-- No temporal or cross-network holdout; limited rare-attack support.
-- Bounded search and near-duplicate/session dependence.
+**Content**
+- **Achieved:** F1 0.7890, ROC-AUC 0.9648, PR-AUC 0.9485, recall 96.04%, FPR 26.736% — 3/4 pre-registered targets met on this harder protocol (F1 short); all met on the pooled random split
+- **Qualified by:** a capture artefact the model leans on far more than it needs (measured by ablation, not assumed), uneven per-family recall, and precision that will not transfer to a production base rate
+- **Cannot measure:** concept drift — timestamps were removed from the partitioned files
+- **Recommendation:** human-in-the-loop triage ranking, recalibrated on target-network traffic. Not autonomous blocking
+- **Next:** multiclass family classification, cross-dataset validation (CIC-IDS2017), adversarial robustness testing
 
-### Recommended visual
+**Recommended visual:** Side-by-side — headline metrics left, the three qualifications right, equally weighted.
 
-Limitations with corresponding validation actions
+**Speaker notes:** Close on the distinction between a number and a finding. A capstone that reported only its F1 would not have discovered the artefact, the duplication problem, or the per-family gaps — and would have recommended a system that should not be deployed the way it suggested.
 
-### Speaker notes
+---
 
-Changing the model after test inspection requires an independent new holdout. Source identity is verified internally, not against an official checksum.
+## Appendix slides (if time or questions allow)
 
-## Slide 12 — Conclusions and next evaluation
-
-### Main content
-
-- Validation selected XGBoost.
-- Use the prototype for education and analyst-reviewed experiments.
-- Validate on recent local telemetry before any operational recommendation.
-
-### Recommended visual
-
-figures/threshold_tradeoff.png
-
-### Speaker notes
-
-Summarize achieved and unmet criteria from Model_Evaluation_Report.md. Generative AI assisted implementation and drafting; executed code produced metrics. Human research review remains required.
+- A1: Full 9-metric comparison table (`reports/Model_Evaluation_Report.md` §2–§4)
+- A2: Correlation structure and the ill-conditioned design matrix (`figures/fig08`)
+- A3: Local SHAP explanations, all four outcome types (`figures/fig23`)
+- A4: Per-family traffic fingerprints (`figures/fig12`)
+- A5: Threshold cost-sensitivity table (`reports/Model_Evaluation_Report.md` §8)
+- A6: Data dictionary (`reports/data_dictionary.csv`)

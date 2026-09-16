@@ -1,0 +1,127 @@
+{
+  "logistic_regression": {
+    "model_key": "logistic_regression",
+    "display_name": "Logistic Regression",
+    "best_params": {
+      "C": 73.92266140516048,
+      "class_weight": null
+    },
+    "fit_seconds": 5.804,
+    "reused_tuning_from": "main",
+    "notes": "Interpretable linear baseline. Coefficients are directly readable as log-odds contributions, which makes it the reference point for judging whether the ensembles' extra complexity is earning its keep.",
+    "tags": [
+      "linear",
+      "interpretable",
+      "baseline"
+    ],
+    "inference_seconds_total": 0.127,
+    "inference_rows": 35069,
+    "inference_ms_per_1k_rows": 3.62,
+    "throughput_flows_per_second": 276228.5,
+    "n_features_after_encoding": 76
+  },
+  "random_forest": {
+    "model_key": "random_forest",
+    "display_name": "Random Forest",
+    "best_params": {
+      "class_weight": "balanced_subsample",
+      "max_depth": 18,
+      "max_features": 0.3,
+      "min_samples_leaf": 1,
+      "min_samples_split": 9,
+      "n_estimators": 362
+    },
+    "fit_seconds": 31.811,
+    "reused_tuning_from": "main",
+    "notes": "Bagged axis-aligned trees. Robust to the dataset's heavy tails and mixed feature scales, and provides variance reduction without the sequential-fitting cost of boosting.",
+    "tags": [
+      "ensemble",
+      "bagging",
+      "tree"
+    ],
+    "inference_seconds_total": 0.3397,
+    "inference_rows": 35069,
+    "inference_ms_per_1k_rows": 9.688,
+    "throughput_flows_per_second": 103221.4,
+    "n_features_after_encoding": 76
+  },
+  "xgboost": {
+    "model_key": "xgboost",
+    "display_name": "XGBoost",
+    "best_params": {
+      "colsample_bytree": 0.92650472773368,
+      "gamma": 0.14722444603479284,
+      "learning_rate": 0.039320324807500945,
+      "max_depth": 9,
+      "min_child_weight": 1,
+      "n_estimators": 455,
+      "reg_alpha": 0.019068457927706083,
+      "reg_lambda": 0.1699223584506862,
+      "scale_pos_weight": 1.0526155408836972,
+      "subsample": 0.9744619096643123
+    },
+    "fit_seconds": 6.45,
+    "reused_tuning_from": "main",
+    "notes": "Gradient-boosted trees. Expected to lead on tabular flow data; the primary candidate for deployment and the model carried into the SHAP analysis.",
+    "tags": [
+      "ensemble",
+      "boosting",
+      "tree"
+    ],
+    "inference_seconds_total": 0.2121,
+    "inference_rows": 35069,
+    "inference_ms_per_1k_rows": 6.048,
+    "throughput_flows_per_second": 165337.9,
+    "n_features_after_encoding": 76
+  },
+  "lightgbm": {
+    "model_key": "lightgbm",
+    "display_name": "LightGBM",
+    "best_params": {
+      "colsample_bytree": 0.7468977981821954,
+      "learning_rate": 0.06414090119572784,
+      "min_child_samples": 19,
+      "n_estimators": 753,
+      "num_leaves": 143,
+      "reg_lambda": 0.022706638025961814,
+      "subsample": 0.9583054382694077,
+      "subsample_freq": 0
+    },
+    "fit_seconds": 9.473,
+    "reused_tuning_from": "main",
+    "notes": "Optional fourth model: leaf-wise boosting. Included to check that the XGBoost result is a property of gradient boosting rather than of one library's defaults.",
+    "tags": [
+      "ensemble",
+      "boosting",
+      "tree",
+      "optional"
+    ],
+    "inference_seconds_total": 0.3776,
+    "inference_rows": 35069,
+    "inference_ms_per_1k_rows": 10.766,
+    "throughput_flows_per_second": 92884.0,
+    "n_features_after_encoding": 76
+  },
+  "isolation_forest": {
+    "model_key": "isolation_forest",
+    "display_name": "Isolation Forest (unsupervised)",
+    "best_params": {
+      "n_estimators": 300,
+      "contamination": "auto",
+      "fitted_on": "benign training flows only"
+    },
+    "fit_seconds": 0.989,
+    "benign_training_rows": 44800,
+    "benign_fraction_of_train": 0.3194,
+    "notes": "Unsupervised baseline trained without any attack labels. Included to quantify what supervised labelling actually buys, and because a novelty detector is the natural complement to a supervised model for zero-day traffic the classifier has never seen.",
+    "tags": [
+      "unsupervised",
+      "anomaly",
+      "optional"
+    ],
+    "inference_seconds_total": 0.5985,
+    "inference_rows": 35069,
+    "inference_ms_per_1k_rows": 17.067,
+    "throughput_flows_per_second": 58594.1
+  }
+}
