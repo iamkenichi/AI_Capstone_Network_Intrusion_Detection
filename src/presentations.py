@@ -281,7 +281,7 @@ def _technical(ctx: dict) -> None:
 **Content**
 - Recall varies substantially by attack family; weakest: {family_low or 'see figure'}
 - Three distinguishable mechanisms: **scarcity** (fixable with data), **behavioural overlap with benign traffic** (not fixable), **duplication-distorted training counts**
-- Missed attacks are **near-misses**{f" — median score {ctx['errors']['false_negative_score_stats']['median']:.2f} against a {threshold:.2f} threshold, only {ctx['errors']['false_negative_score_stats']['share_below_0.10']:.0%} below 0.10" if ctx.get('errors') and 'false_negative_score_stats' in ctx['errors'] else ''}, so the threshold is the dominant lever and borderline review genuinely helps
+- Missed attacks are **near-misses**{f" — median score {ctx['errors']['false_negative_score_stats']['median']:.2f} against a {threshold:.3f} threshold, only {ctx['errors']['false_negative_score_stats']['share_below_0.10']:.0%} below 0.10" if ctx.get('errors') and 'false_negative_score_stats' in ctx['errors'] else ''}, so the threshold is the dominant lever and borderline review genuinely helps
 - False alerts concentrate in specific services → actionable via per-service thresholds
 - **UNSW-NB15 has no demographic attributes.** This is an *operational* performance audit; no demographic fairness claim is made or possible
 
@@ -311,7 +311,7 @@ def _technical(ctx: dict) -> None:
 
 **Content**
 - Flow collector → feature extraction → model → **risk-banded triage queue** → analyst → response
-- Operating threshold **{threshold:.2f}**, chosen on validation; a low-FPR alternative is published for capacity-limited SOCs
+- Operating threshold **{threshold:.3f}**, chosen on validation; a low-FPR alternative is published for capacity-limited SOCs
 - Cost assumption stated openly: 20:1 FN:FP, with a sensitivity table
 - Measured throughput: **{row.get('throughput_flows_per_second', float('nan')):,.0f} flows/second** on one commodity CPU
 - Streamlit prototype: single-flow scoring, batch upload, live threshold control, per-alert SHAP

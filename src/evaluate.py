@@ -397,7 +397,7 @@ def fig_confusion_matrices(
                         fontweight="bold" if i != j else "normal")
         ax.set_xticks([0, 1], ["Pred\nbenign", "Pred\nattack"], fontsize=9)
         ax.set_yticks([0, 1], ["True\nbenign", "True\nattack"], fontsize=9)
-        ax.set_title(f"{DISPLAY_NAMES[key]}\n(threshold {threshold:.2f})", fontsize=10)
+        ax.set_title(f"{DISPLAY_NAMES[key]}\n(threshold {threshold:.3f})", fontsize=10)
         ax.grid(False)
 
     fig.suptitle("Confusion matrices on the held-out test split "
@@ -563,7 +563,7 @@ def fig_threshold_analysis(
         # Labels sit in the padded strip between the axes and the panel title, so
         # they never overlap the curves, the legend, or each other.
         align = "left" if threshold < 0.15 else "right" if threshold > 0.85 else "center"
-        axes[0].annotate(f"{label} {threshold:.2f}",
+        axes[0].annotate(f"{label} {threshold:.3f}",
                          xy=(threshold, 1.01), xycoords=("data", "axes fraction"),
                          fontsize=7.5, color=color, ha=align, va="bottom")
     for ax in axes:

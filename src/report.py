@@ -81,7 +81,7 @@ def describe_error_confidence(errors: dict | None, threshold: float) -> str:
     if fn_far < 0.10 and gap < 0.30:
         verdict = (
             f"The missed attacks are **near-misses, not confident errors**. Their median score is "
-            f"{fn_median:.4f} against a decision threshold of {threshold:.2f} - a gap of only "
+            f"{fn_median:.4f} against a decision threshold of {threshold:.3f} - a gap of only "
             f"{gap:.3f} - and just {fn_far:.1%} of them score below 0.10. Operationally that is "
             "the *better* of the two possible failure modes: it means the threshold is the "
             "dominant lever, that lowering it would recover a substantial share of these attacks "
@@ -91,7 +91,7 @@ def describe_error_confidence(errors: dict | None, threshold: float) -> str:
     else:
         verdict = (
             f"The missed attacks are scored with **high confidence**: median {fn_median:.4f} "
-            f"against a {threshold:.2f} threshold, with {fn_far:.1%} below 0.10. That is the "
+            f"against a {threshold:.3f} threshold, with {fn_far:.1%} below 0.10. That is the "
             "worse failure mode - a borderline-review workflow cannot catch an error that never "
             "approaches the border, and lowering the threshold would recover few of them while "
             "adding many false alerts."
@@ -581,7 +581,7 @@ def generate_model_report() -> None:
     op_rows = ""
     if operating:
         op_rows = "\n".join(
-            f"| {name} | {m['threshold']:.2f} | {m['recall']:.4f} | {m['precision']:.4f} | "
+            f"| {name} | {m['threshold']:.3f} | {m['recall']:.4f} | {m['precision']:.4f} | "
             f"{m['f1']:.4f} | {m['false_positive_rate']:.3%} | {m['false_negative_rate']:.3%} | "
             f"{int(m['fn']):,} | {int(m['fp']):,} |"
             for name, m in operating.items())
@@ -589,7 +589,7 @@ def generate_model_report() -> None:
     sensitivity_rows = ""
     if recommendation:
         sensitivity_rows = "\n".join(
-            f"| {key.replace('ratio_', '')}:1 | {v['threshold']:.2f} | "
+            f"| {key.replace('ratio_', '')}:1 | {v['threshold']:.3f} | "
             f"{v['recall']:.4f} | {v['false_positive_rate']:.3%} |"
             for key, v in recommendation["cost_ratio_sensitivity"].items())
 
@@ -745,7 +745,7 @@ optimistic - and three candidate operating points were computed.
 |---|---|---|---|---|---|---|---|---|
 {op_rows}
 
-**Adopted: {threshold:.2f}** (F1-optimal on validation).
+**Adopted: {threshold:.3f}** (F1-optimal on validation).
 
 ### Cost sensitivity
 
@@ -777,7 +777,7 @@ See `figures/fig17_threshold_analysis.png`.
 ## 9. Pre-registered targets
 
 The targets in `reports/problem_statement.md` were set **before** modelling.
-Measured against {best_name} at threshold {threshold:.2f} on the test split:
+Measured against {best_name} at threshold {threshold:.3f} on the test split:
 
 | # | Target | Achieved | Status |
 |---|---|---|---|
@@ -845,7 +845,7 @@ and the families with the worst recall are precisely the low-volume ones.
 into false positives at a rate the sweep in section 8 quantifies exactly.
 
 **What should be deployed, and why?** {best_name}, at threshold
-{threshold:.2f}, as a **triage-ranking layer feeding human analysts** - not as an
+{threshold:.3f}, as a **triage-ranking layer feeding human analysts** - not as an
 automated blocking control. The reasoning: it leads on PR-AUC, it is fast enough
 to keep up with a real link ({row.get('throughput_flows_per_second', float('nan')):,.0f}
 flows/s), and it supports per-alert SHAP explanations, which a blocking control

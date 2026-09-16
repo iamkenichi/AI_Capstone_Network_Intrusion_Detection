@@ -127,11 +127,11 @@ optimistic - and three candidate operating points were computed.
 
 | Operating point | Threshold | Recall | Precision | F1 | FPR | FNR | Missed attacks | False alerts |
 |---|---|---|---|---|---|---|---|---|
-| adopted_f1_optimal | 0.51 | 0.9112 | 0.9106 | 0.9109 | 7.142% | 8.884% | 1,212 | 1,221 |
-| fpr_constrained | 0.87 | 0.7698 | 0.9868 | 0.8649 | 0.819% | 23.024% | 3,141 | 140 |
-| default_0.50 | 0.50 | 0.9135 | 0.9087 | 0.9111 | 7.324% | 8.650% | 1,180 | 1,252 |
+| adopted_f1_optimal | 0.505 | 0.9112 | 0.9106 | 0.9109 | 7.142% | 8.884% | 1,212 | 1,221 |
+| fpr_constrained | 0.870 | 0.7698 | 0.9868 | 0.8649 | 0.819% | 23.024% | 3,141 | 140 |
+| default_0.50 | 0.500 | 0.9135 | 0.9087 | 0.9111 | 7.324% | 8.650% | 1,180 | 1,252 |
 
-**Adopted: 0.51** (F1-optimal on validation).
+**Adopted: 0.505** (F1-optimal on validation).
 
 ### Cost sensitivity
 
@@ -140,11 +140,11 @@ a false alert. That ratio is an **assumption, openly stated, not a measurement**
 
 | Assumed FN:FP cost ratio | Optimal threshold | Recall | FPR |
 |---|---|---|---|
-| 5:1 | 0.18 | 0.9905 | 22.649% |
-| 10:1 | 0.08 | 0.9996 | 27.849% |
-| 20:1 | 0.04 | 1.0000 | 28.293% |
-| 50:1 | 0.04 | 1.0000 | 28.293% |
-| 100:1 | 0.04 | 1.0000 | 28.293% |
+| 5:1 | 0.185 | 0.9905 | 22.649% |
+| 10:1 | 0.080 | 0.9996 | 27.849% |
+| 20:1 | 0.035 | 1.0000 | 28.293% |
+| 50:1 | 0.035 | 1.0000 | 28.293% |
+| 100:1 | 0.035 | 1.0000 | 28.293% |
 
 The project's working figure is 20:1 - deliberately conservative. Published
 breach-cost studies imply ratios in the hundreds, but a detector tuned at that
@@ -167,7 +167,7 @@ See `figures/fig17_threshold_analysis.png`.
 ## 9. Pre-registered targets
 
 The targets in `reports/problem_statement.md` were set **before** modelling.
-Measured against XGBoost at threshold 0.51 on the test split:
+Measured against XGBoost at threshold 0.505 on the test split:
 
 | # | Target | Achieved | Status |
 |---|---|---|---|
@@ -210,7 +210,7 @@ Measured against XGBoost at threshold 0.51 on the test split:
 
 ### How the model is wrong - near-misses or confident errors?
 
-The missed attacks are **near-misses, not confident errors**. Their median score is 0.3463 against a decision threshold of 0.51 - a gap of only 0.159 - and just 1.6% of them score below 0.10. Operationally that is the *better* of the two possible failure modes: it means the threshold is the dominant lever, that lowering it would recover a substantial share of these attacks (at a cost the Phase 10 sweep quantifies exactly), and that a 'review the borderline alerts' workflow would genuinely catch them rather than looking past them.
+The missed attacks are **near-misses, not confident errors**. Their median score is 0.3463 against a decision threshold of 0.505 - a gap of only 0.159 - and just 1.6% of them score below 0.10. Operationally that is the *better* of the two possible failure modes: it means the threshold is the dominant lever, that lowering it would recover a substantial share of these attacks (at a cost the Phase 10 sweep quantifies exactly), and that a 'review the borderline alerts' workflow would genuinely catch them rather than looking past them.
 
 The false alerts behave the same way: median score 0.6326, with only 8.4% above 0.90. Both error types concentrate near the decision boundary, which is exactly the regime in which the choice of operating threshold - rather than the choice of model - determines what a SOC experiences.
 
@@ -261,7 +261,7 @@ and the families with the worst recall are precisely the low-volume ones.
 into false positives at a rate the sweep in section 8 quantifies exactly.
 
 **What should be deployed, and why?** XGBoost, at threshold
-0.51, as a **triage-ranking layer feeding human analysts** - not as an
+0.505, as a **triage-ranking layer feeding human analysts** - not as an
 automated blocking control. The reasoning: it leads on PR-AUC, it is fast enough
 to keep up with a real link (195,353
 flows/s), and it supports per-alert SHAP explanations, which a blocking control

@@ -270,7 +270,7 @@ def fig_local_explanations(
         }
 
     fig.suptitle(f"Local explanations - {model_name}  "
-                 f"(representative case of each outcome, threshold {threshold:.2f})")
+                 f"(representative case of each outcome, threshold {threshold:.3f})")
     fig.tight_layout(rect=(0, 0.035, 1, 0.95))
     plotting.caption(fig, (
         "Red bars push the flow toward ATTACK, blue bars toward BENIGN; the final score is the "

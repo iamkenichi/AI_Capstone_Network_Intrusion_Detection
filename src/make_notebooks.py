@@ -1039,14 +1039,14 @@ if recommendation_path.exists():
         if name in recommendation:
             rows.append({"operating_point": name, **recommendation[name]})
     display(pd.DataFrame(rows).set_index("operating_point")
-            .style.format({"threshold": "{:.2f}", "recall": "{:.4f}",
+            .style.format({"threshold": "{:.3f}", "recall": "{:.4f}",
                            "precision": "{:.4f}", "f1": "{:.4f}",
                            "false_positive_rate": "{:.3%}",
                            "false_negative_rate": "{:.3%}"}))
 
     display(Markdown("**Sensitivity of the cost-optimal threshold to the cost assumption**"))
     display(pd.DataFrame(recommendation["cost_ratio_sensitivity"]).T
-            .style.format({"threshold": "{:.2f}", "recall": "{:.4f}",
+            .style.format({"threshold": "{:.3f}", "recall": "{:.4f}",
                            "false_positive_rate": "{:.3%}"}))
 """),
         md("""
@@ -1070,7 +1070,7 @@ if operating_path.exists():
          "false_positive_rate", "false_negative_rate", "fn", "fp"]]
     display(Markdown("### The selected model at each operating point — on the TEST split"))
     display(frame.style.format({
-        "threshold": "{:.2f}", "recall": "{:.4f}", "precision": "{:.4f}",
+        "threshold": "{:.3f}", "recall": "{:.4f}", "precision": "{:.4f}",
         "f1": "{:.4f}", "false_positive_rate": "{:.3%}",
         "false_negative_rate": "{:.3%}", "fn": "{:,.0f}", "fp": "{:,.0f}"}))
 """),
@@ -1150,7 +1150,7 @@ deployment = (json.loads(deployment_path.read_text(encoding="utf-8"))
               if deployment_path.exists() else {})
 if deployment:
     print(f"Explaining : {deployment['display_name']}")
-    print(f"Threshold  : {deployment['threshold']:.2f}")
+    print(f"Threshold  : {deployment['threshold']:.3f}")
 """),
         md("""
 ## 1. Global SHAP importance

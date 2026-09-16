@@ -9,6 +9,7 @@ suite runs without any data on disk at all.
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -23,7 +24,26 @@ if str(REPO_ROOT) not in sys.path:
 from src import config  # noqa: E402
 
 RAW_AVAILABLE = (config.RAW_DIR / config.TRAIN_FILE).exists()
-MODEL_AVAILABLE = (config.MODELS_DIR / "deployment.json").exists()
+
+
+def _model_available() -> bool:
+    """True only if the fitted estimator can actually be loaded.
+
+    ``deployment.json`` records *which* model was selected and is committed, but
+    the ``.joblib`` it points at is a build product and is not. Checking the JSON
+    alone made these tests attempt to load a missing file on a fresh checkout.
+    """
+    record = config.MODELS_DIR / "deployment.json"
+    if not record.exists():
+        return False
+    try:
+        name = json.loads(record.read_text(encoding="utf-8"))["model_key"]
+    except (ValueError, KeyError, OSError):
+        return False
+    return (config.MODELS_DIR / f"{name}.joblib").exists()
+
+
+MODEL_AVAILABLE = _model_available()
 
 requires_data = pytest.mark.skipif(
     not RAW_AVAILABLE,

@@ -47,7 +47,7 @@ timestamps — and ranks them for analyst triage.
 | Metric | Value |
 |---|---|
 | **Model** | XGBoost |
-| **Operating threshold** | 0.51 (tuned on validation) |
+| **Operating threshold** | 0.505 (tuned on validation) |
 | **Attack recall** | **91.12%** |
 | **Precision** | 91.06% |
 | **F1** | **0.9109** |

@@ -42,7 +42,7 @@ def generate() -> None:
 | Metric | Value |
 |---|---|
 | **Model** | {best_name} |
-| **Operating threshold** | {threshold:.2f} (tuned on validation) |
+| **Operating threshold** | {threshold:.3f} (tuned on validation) |
 | **Attack recall** | **{row['recall']:.2%}** |
 | **Precision** | {row['precision']:.2%} |
 | **F1** | **{row['f1']:.4f}** |

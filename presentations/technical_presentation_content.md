@@ -134,7 +134,7 @@
 **Content**
 - Recall varies substantially by attack family; weakest: Analysis (59%), Fuzzers (74%), Shellcode (96%), Exploits (98%)
 - Three distinguishable mechanisms: **scarcity** (fixable with data), **behavioural overlap with benign traffic** (not fixable), **duplication-distorted training counts**
-- Missed attacks are **near-misses** — median score 0.35 against a 0.51 threshold, only 2% below 0.10, so the threshold is the dominant lever and borderline review genuinely helps
+- Missed attacks are **near-misses** — median score 0.35 against a 0.505 threshold, only 2% below 0.10, so the threshold is the dominant lever and borderline review genuinely helps
 - False alerts concentrate in specific services → actionable via per-service thresholds
 - **UNSW-NB15 has no demographic attributes.** This is an *operational* performance audit; no demographic fairness claim is made or possible
 
@@ -173,7 +173,7 @@
 
 **Content**
 - Flow collector → feature extraction → model → **risk-banded triage queue** → analyst → response
-- Operating threshold **0.51**, chosen on validation; a low-FPR alternative is published for capacity-limited SOCs
+- Operating threshold **0.505**, chosen on validation; a low-FPR alternative is published for capacity-limited SOCs
 - Cost assumption stated openly: 20:1 FN:FP, with a sensitivity table
 - Measured throughput: **195,353 flows/second** on one commodity CPU
 - Streamlit prototype: single-flow scoring, batch upload, live threshold control, per-alert SHAP

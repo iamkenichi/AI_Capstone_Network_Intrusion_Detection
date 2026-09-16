@@ -367,7 +367,7 @@ def main(argv: list[str] | None = None) -> int:
         examples = reference["examples"]
         frame = pd.DataFrame(list(examples.values()), index=list(examples))
         scored = predict(frame, model=model, threshold=args.threshold)
-        print(f"\nModel: {model.display_name}   threshold: {scored['threshold'].iloc[0]:.2f}\n")
+        print(f"\nModel: {model.display_name}   threshold: {scored['threshold'].iloc[0]:.3f}\n")
         print(scored[["attack_probability", "verdict", "risk_band"]].to_string())
         return 0
 
@@ -388,7 +388,7 @@ def main(argv: list[str] | None = None) -> int:
         print(scored.to_string())
     alerts = int(scored["prediction"].sum())
     print(f"\n{alerts:,} of {len(scored):,} flows flagged as attacks "
-          f"({alerts / len(scored):.2%}) at threshold {scored['threshold'].iloc[0]:.2f}")
+          f"({alerts / len(scored):.2%}) at threshold {scored['threshold'].iloc[0]:.3f}")
     return 0
 
 

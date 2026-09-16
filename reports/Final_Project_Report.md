@@ -18,7 +18,7 @@ and one unsupervised detector (Isolation Forest) were trained on the UNSW-NB15
 dataset. **XGBoost** was selected on validation PR-AUC and evaluated once on a
 held-out test split of 30,737 flows.
 
-**Headline results** at the tuned operating threshold of 0.51:
+**Headline results** at the tuned operating threshold of 0.505:
 
 | Metric | Value |
 |---|---|
@@ -238,9 +238,9 @@ scoring F1 with PR-AUC and ROC-AUC recorded alongside. Each model is a full
 
 | Operating point | Threshold | Recall | Precision | FPR | Missed | False alerts |
 |---|---|---|---|---|---|---|
-| adopted f1 optimal | 0.51 | 0.9112 | 0.9106 | 7.142% | 1,212 | 1,221 |
-| fpr constrained | 0.87 | 0.7698 | 0.9868 | 0.819% | 3,141 | 140 |
-| default 0.50 | 0.50 | 0.9135 | 0.9087 | 7.324% | 1,180 | 1,252 |
+| adopted f1 optimal | 0.505 | 0.9112 | 0.9106 | 7.142% | 1,212 | 1,221 |
+| fpr constrained | 0.870 | 0.7698 | 0.9868 | 0.819% | 3,141 | 140 |
+| default 0.50 | 0.500 | 0.9135 | 0.9087 | 7.324% | 1,180 | 1,252 |
 
 ### 12.4 Ablations - what is the headline actually measuring?
 
@@ -351,7 +351,7 @@ behaviour rather than a cherry-picked extreme.
 | Backdoor | 117 | 1.0000 | 0.0000 |
 | Worms | 33 | 1.0000 | 0.0000 |
 
-The missed attacks are **near-misses, not confident errors**. Their median score is 0.3463 against a decision threshold of 0.51 - a gap of only 0.159 - and just 1.6% of them score below 0.10. Operationally that is the *better* of the two possible failure modes: it means the threshold is the dominant lever, that lowering it would recover a substantial share of these attacks (at a cost the Phase 10 sweep quantifies exactly), and that a 'review the borderline alerts' workflow would genuinely catch them rather than looking past them.
+The missed attacks are **near-misses, not confident errors**. Their median score is 0.3463 against a decision threshold of 0.505 - a gap of only 0.159 - and just 1.6% of them score below 0.10. Operationally that is the *better* of the two possible failure modes: it means the threshold is the dominant lever, that lowering it would recover a substantial share of these attacks (at a cost the Phase 10 sweep quantifies exactly), and that a 'review the borderline alerts' workflow would genuinely catch them rather than looking past them.
 
 The false alerts behave the same way: median score 0.6326, with only 8.4% above 0.90. Both error types concentrate near the decision boundary, which is exactly the regime in which the choice of operating threshold - rather than the choice of model - determines what a SOC experiences.
 
@@ -428,7 +428,7 @@ enterprise link without specialised hardware.
 ## 20. Recommendations
 
 1. **Deploy XGBoost as a triage-ranking layer**, not an autonomous control.
-2. **Operate at threshold 0.51**, or at the FPR-constrained point if the
+2. **Operate at threshold 0.505**, or at the FPR-constrained point if the
    SOC is already at queue capacity.
 3. **Re-derive the threshold on target-network data** before go-live.
 4. **Instrument per-service false-positive rates** from day one.

@@ -225,7 +225,7 @@ def generate_final_report(ctx: dict) -> None:
     op_rows = ""
     if ctx["operating"]:
         op_rows = "\n".join(
-            f"| {name.replace('_', ' ')} | {m['threshold']:.2f} | {m['recall']:.4f} | "
+            f"| {name.replace('_', ' ')} | {m['threshold']:.3f} | {m['recall']:.4f} | "
             f"{m['precision']:.4f} | {m['false_positive_rate']:.3%} | {int(m['fn']):,} | {int(m['fp']):,} |"
             for name, m in ctx["operating"].items())
 
@@ -264,7 +264,7 @@ and one unsupervised detector (Isolation Forest) were trained on the UNSW-NB15
 dataset. **{best_name}** was selected on validation PR-AUC and evaluated once on a
 held-out test split of {int(row['n']):,} flows.
 
-**Headline results** at the tuned operating threshold of {threshold:.2f}:
+**Headline results** at the tuned operating threshold of {threshold:.3f}:
 
 | Metric | Value |
 |---|---|
@@ -610,7 +610,7 @@ enterprise link without specialised hardware.
 ## 20. Recommendations
 
 1. **Deploy {best_name} as a triage-ranking layer**, not an autonomous control.
-2. **Operate at threshold {threshold:.2f}**, or at the FPR-constrained point if the
+2. **Operate at threshold {threshold:.3f}**, or at the FPR-constrained point if the
    SOC is already at queue capacity.
 3. **Re-derive the threshold on target-network data** before go-live.
 4. **Instrument per-service false-positive rates** from day one.

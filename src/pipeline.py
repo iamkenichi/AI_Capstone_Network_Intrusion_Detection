@@ -146,7 +146,7 @@ def run_experiment(ablation: str = "main", make_figures: bool = True) -> dict[st
         }
         (config.MODELS_DIR / "deployment.json").write_text(
             json.dumps(deployment, indent=2), encoding="utf-8")
-        print(f"[pipeline] froze deployment config: {best_key} @ threshold {chosen_threshold:.2f}")
+        print(f"[pipeline] froze deployment config: {best_key} @ threshold {chosen_threshold:.3f}")
 
         from src.predict import build_feature_reference
         reference = build_feature_reference(train_df)
